@@ -15,9 +15,10 @@ https://cs50.harvard.edu/x/2022/weeks/
 - [[#-----1][----]]
 - [[#week-1][Week 1]]
 - [[#week-2][Week 2]]
-  - [[#compiling-source-code-into-machine-code-is-actually-made-up-of-four-smaller-steps][Compiling source code into machine code is actually made up of four smaller steps:]]
+  - [[#pre-requisite-notes][Pre-requisite Notes]]
   - [[#debugging][Debugging]]
   - [[#types][Types]]
+  - [[#types-array-chars][Types Array Chars]]
 
 * ----
 * psets/1/mario
@@ -331,15 +332,16 @@ Here, L is the average number of letters per 100 words in the text, and S is the
 
 - Modify main in readability.c so that instead of outputting the number of letters, words, and sentences, it instead outputs (only) the grade level as defined by the Coleman-Liau index (e.g. "Grade 2" or "Grade 8" or the like). Be sure to round the resulting index number to the nearest int!
 
+If the resulting index number is 16 or higher (equivalent to or greater than a senior undergraduate reading level), your program should output "Grade 16+" instead of outputting an exact index number. If the index number is less than 1, your program should output "Before Grade 1".
 ***** Hints
 - Recall that round is declared in math.h, per manual.cs50.io!
 - Recall that, when dividing values of type int in C, the result will also be an int, with any remainder (i.e., digits after the decimal point) discarded.
   - Put another way, the result will be “truncated.”
   - You might want to cast your one or more values to float before performing division when calculating L and S!
 
-**** If the resulting index number is 16 or higher (equivalent to or greater than a senior undergraduate reading level), your program should output "Grade 16+" instead of outputting an exact index number. If the index number is less than 1, your program should output "Before Grade 1".
 *** How to Test Your Code
-**** Try running your program on the following texts, to ensure you see the specified grade level.
+**** running your program to see the grade level.
+Try running your program on the following texts, to ensure you see the specified grade level.
 Be sure to copy only the text, no extra spaces.
 
 #+begin_example
@@ -355,26 +357,18 @@ Be sure to copy only the text, no extra spaces.
 - A large class of computational problems involve the determination of properties of graphs, digraphs, integers, arrays of integers, finite families of finite sets, boolean formulas and elements of other countable domains. (Grade 16+)
 #+end_example
 
-**** Execute the below to evaluate the correctness of your code further using check50. But be sure to compile and test it yourself as well!
-#+begin_example shell
-check50 cs50/problems/2022/x/readability
-#+end_example
-
-**** Execute the below to evaluate the style of your code using style50.
-#+begin_example shell
-style50 readability.c
-#+end_example
 
 * ----
 * Week 1
 * Week 2
-** Compiling source code into machine code is actually made up of four smaller steps:
-*** preprocessing
+** Pre-requisite Notes
+*** Compiling source code into machine code is actually made up of four smaller steps:
+**** preprocessing
 Preprocessing involves replacing lines that start with a #, like #include.
 For example, #include <cs50.h> will tell clang to look for that header file, since it contains content, like prototypes of functions, that we want to include in our program.
 Then, clang will essentially copy and paste the contents of those header files into our program.
 
-**** For example …
+***** Example …
 #+begin_src c
 
 #include <cs50.h>
@@ -387,7 +381,7 @@ int main(void)
 }
 #+end_src
 
-***** … will be preprocessed into:
+****** … will be preprocessed into:
 #+begin_src c
 /* ... */
 string get_string(string prompt);
@@ -414,7 +408,7 @@ int main(void)
 }
 #+end_src
 
-****** … will be preprocessed into:
+******* … will be preprocessed into:
 #+begin_src c
 /* ... */
 string get_string(string prompt);
@@ -574,48 +568,130 @@ int negative_int(void) {
 +-+-+-+-+-+-+-+-+
 *** Source Code (scores.c)
 Memory as grid/canvas to paint 0s and 1s on. Program with 3 integers
+ - Purpose of array is not to save space, but to eliminate the need for having lots of variables names.
+ - Data type `short` or `char` also available.  memory was expensive years ago so, we just use int now, thanks to relative price drop.?
+ - Arrays give one variable name, but multiple locations.
 
 #+name: w2_arrays/scores.c
 #+begin_src c :tangle ./scratch/w2_arrays/scores.c :main no :comments link :noweb tangle
+#include <stddef.h>
 #include <stdio.h>
 
-/*
- * cs50 -> debugger tool
- * No need to mention *.c file (with extension)
- * $ debug50 ./buggy
- * 1. Debugger
- * 2. printf
- * 3. Rubber duck: Talking through problems to a person or an inanimate object.
- * */
-
 void scores(void);
-// int negative_int(void);
+void scores_array(void);
+int prompt_score(int);
+int prompt_total_scores();
+float scores_array_prompt(void);
 
+// TODO close while loop when -ve num is entered.
+// int negative_int(void);
 int main(int argc, char *argv[]) {
-  printf("\n---------\n");
   printf("~scores.c~\n");
-  printf("---------\n");
 
   scores();
+  scores_array();
+  float avg = scores_array_prompt();
 
+  printf("\nAverage: %.2f\n", avg);
   // int n_main = negative_int();
   // printf("negative_int: %i\n", n_main);
-
   return 0;
 }
 
-// buggy is a debugging playground.
+// scores returns average of scores.
+//
+// As long as one arg in an operation is a float.
+// it returns float.
+//
+// dont't hardcode avg denominator.
 void scores(void) {
-  int length = 3;
-  int counter = 0;
+  int s1 = 72;
+  int s2 = 73;
+  int s3 = 33;
 
-  // <= works instead of < => For printing 4 lines and not 3.
-  for (int i = 0; i <= length; i++) {
-    // see inside the computers memory with this debug hack.
-    printf("#\n");
-    counter++;
-    // printf("counter: %i", counter);
+  // ### variable `array`
+  int scores[3] = {s1, s2, s3};
+
+  float avg = ((float)s1 + s2 + s3) / 3; // or use 3.0;
+
+  printf("Average: %.2f\n", avg);
+}
+
+// ### `expression`
+// Type: `unsigned long`
+// int scores[3] = {72, 73, 33};
+void scores_array(void) {
+  const int len = 3; // allocate capacity og scores array.
+  int scores[len];   // ### variable `array`
+  int sum;           // scores[0] + scores[1] + scores[2]
+  float avg;         // scores sum / scores size
+
+  scores[0] = 72;
+  scores[1] = 73;
+  scores[2] = 33;
+
+  for (int i = 0; i < len; i++) {
+    int score = scores[i]; // printf("\n%2i: score: %i\n", i, score);
   }
+
+  sum = (scores[0] + scores[1] + scores[2]);
+  avg = sum / (float)len;
+
+  printf("\nAverage_Array: %.2f\n\n\n", avg);
+}
+
+//   Format specifies type 'int *' but the argument has type 'int' clang
+// (-Wformat) [79, 15]
+int prompt_score(int idx) {
+  int score;
+
+  printf("Enter a score(%i): ", idx + 1);
+  scanf("%i", &score);
+
+  return score;
+}
+
+int prompt_total_scores() {
+  int length;
+
+  printf("How many scores? ");
+  scanf("%i", &length);
+
+  return length;
+}
+
+/*
+ * ! Code Smell
+ *
+ * int scores[3] = {72, 73, 33};
+ * OR
+ * scores[0] = prompt_user();
+ * scores[1] = prompt_user();
+ * scores[2] = prompt_user();
+ *
+ */
+
+// scores_array_prompt returns average of user input scores.
+//
+// Initialize `prev` to 0 to avoid errors.
+float scores_array_prompt(void) {
+  int len = prompt_total_scores(); // Allocate capacity of scores array.
+  int s[len];                      // Initialize array with capacity len.
+
+  int prev = 0; // Previous cached sum.
+  int curr;     // Current score being looped.
+  int sum;      // s[0] + s[1] + s[2].
+
+  for (int i = 0; i < len; i++) {
+    s[i] = prompt_score(i); // Prompt user for int & store in ith pos.
+
+    curr = prev + s[i]; // Add prev sum and current prompted score.
+
+    sum = curr; // Assign sum to curr value.
+    prev = sum; // Reset prev to sum.
+  }
+
+  return sum / (float)len; // Assert float type once.
 }
 
 // USE `STEP INTO` IN THE DEBUGGER MENU (F11) (down arrow)
@@ -634,4 +710,12 @@ int negative_int(void) {
 
   return n;
 }
+#+end_src
+** Types Array Chars
+#+name: w2_arrays/hi.c
+#+begin_src c :tangle ./scratch/w2_arrays/hi.c :main no :comments link :noweb tangle
+
+#include <stddef.h>
+#include <stdio.h>
+
 #+end_src
