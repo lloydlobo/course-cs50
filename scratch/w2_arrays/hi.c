@@ -71,5 +71,4 @@ void hi_string(void) {
   }
   printf("\n");
 }
-
 /* w2_arrays/hi.c ends here */
