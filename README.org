@@ -1,0 +1,637 @@
+#+title: CS50 2022
+#+startup: fold
+-----
+
+https://cs50.harvard.edu/x/2022/weeks/
+
+* Table of Contents :TOC:
+- [[#----][----]]
+- [[#psets1mario][psets/1/mario]]
+  - [[#source][Source]]
+  - [[#docs][Docs]]
+- [[#psets2readability][psets/2/readability]]
+  - [[#source-1][Source]]
+  - [[#docs-1][Docs]]
+- [[#-----1][----]]
+- [[#week-1][Week 1]]
+- [[#week-2][Week 2]]
+  - [[#compiling-source-code-into-machine-code-is-actually-made-up-of-four-smaller-steps][Compiling source code into machine code is actually made up of four smaller steps:]]
+  - [[#debugging][Debugging]]
+  - [[#types][Types]]
+
+* ----
+* psets/1/mario
+https://cs50.harvard.edu/x/2022/psets/1/mario/less/
+** Source
+#+NAME: psets/1_mario
+#+begin_src c :tangle ./psets/1_mario/mario.c :main no :noweb yes :comments link
+// https://cs50.harvard.edu/x/2022/psets/1/mario/less///
+//
+// mario allows the user to decide just how tall the pyramid should be by first
+// prompting them for a positive integer between, say, 1 and 8, inclusive.
+//
+// Print the pyramid in text, using hashes (#) for bricks.
+// Each hash is a bit taller than it is wide,
+// so the pyramid itself will also be taller than it is wide.
+// https://cs50.harvard.edu/x/2022/psets/1/mario/less///
+//
+// mario allows the user to decide just how tall the pyramid should be by first
+// prompting them for a positive integer between, say, 1 and 8, inclusive.
+//
+// Print the pyramid in text, using hashes (#) for bricks.
+// Each hash is a bit taller than it is wide,
+// so the pyramid itself will also be taller than it is wide.
+
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <string.h>
+
+#define BOOL bool
+
+char brick() { return '#'; }
+
+int promtUserForCount() {
+  int count;
+  printf("What pyramid height would you like to create? (1-8)?\n");
+  scanf("%i", &count);
+  return count;
+}
+
+void loopPrompt(int count) {
+  for (size_t i = 0; i < count; i++) {
+    for (size_t j = 0; j < count - i - 1; j++) {
+      printf(" ");
+    }
+    for (size_t k = 0; k <= i; k++) {
+      printf("%c", brick()); // printf("#");
+    }
+    printf("\n"); // print new line after one pyramid line.
+  }
+}
+
+bool isValidCount(int count) { return count >= 1 && count <= 8; }
+
+void printMario() {
+  int count = 8;
+  int newcount;
+  count = promtUserForCount();
+  if (isValidCount(count)) {
+    loopPrompt(count);
+  } else {
+    printf("\nerr: Pyramid count needs to be between 1 and 8.\n");
+  }
+}
+
+int main() {
+  printf("hello, CS50\n");
+  printMario();
+  // cs50_mario_1();
+  // cs50_mario_2();
+  return 0;
+}
+
+// void cs50_mario_1() {
+//   int n;
+//   do {
+//     printf("Height?: \n");
+//     scanf("%i", &n); //   Format specifies type 'int *' but the argument
+//                      // has type 'int' clang (-Wformat) [22, 17]
+//   } while (n < 1);
+//   {
+//     for (int i = 0; i < n; i++) {
+//       printf("?");
+//     }
+//     printf("\n");
+//   }
+// }
+
+// void cs50_mario_2() {
+//   int n;
+//   do {
+//     printf("Height?: \n");
+//     scanf("%i", &n); //   Format specifies type 'int *' but the argument
+//                      // has type 'int' clang (-Wformat) [22, 17]
+//   } while (n < 1);
+
+//   // For each row.
+//   for (int i = 0; i < n; i++) {
+//     // For each column.
+//     for (int j = 0; j < n; j++) {
+//       // Print a brick.
+//       printf("#");
+//     }
+//     // Move to next row.
+//     printf("\n");
+//   }
+// }
+
+// //////////////////////////////////////////////
+#+end_src
+** Docs
+*** Reference
+- URL: https://cs50.harvard.edu/x/2022/psets/1/mario/less///
+*** About
+**** a
+* psets/2/readability
+URL: https://cs50.harvard.edu/x/2022/psets/2/readability/
+** Source
+#+NAME: psets/2_readability
+#+begin_src c :tangle ./psets/2_readability/readability.c :main no :noweb yes :comments link
+#include <stddef.h>
+#include <stdio.h>
+#include <string.h>
+#include <strings.h>
+
+// Program to take 5 values from the user and store them in an array
+// Print the elements stored in the array
+int print_arr() {
+  int values[5];
+  printf("Enter 5 integers: ");
+  // taking input and storing it in an array
+  for (int i = 0; i < 5; ++i) {
+    scanf("%d", &values[i]);
+  }
+  printf("Displaying integers: ");
+  // printing elements of an array
+  for (int i = 0; i < 5; ++i) {
+    printf("%d\n", values[i]);
+  }
+  return 0;
+}
+
+// Function getInput
+//
+// https://www.programiz.com/c-programming/c-arrays
+//
+// take input and store it in the ith element
+// scanf("%d", &arr[i-1]);
+//
+// print ith element of the array
+// printf("%d", arr[i-1]);
+int getInput(int *arr) {
+  printf("Enter number: ");
+  // take input and store it in the 3rd element
+  int outArr = scanf("%d", &arr[2]);
+  printf("%d\n", arr[2]);
+
+  return outArr;
+}
+
+// const int(*count()) {
+int count() {
+  int arrCount[3] = {1, 4, 8};
+  arrCount[0] = 1;
+  arrCount[1] = 4;
+  arrCount[2] = 8;
+  getInput(arrCount);
+  size_t len = 3;
+  for (size_t i = 0; i < len; i++) {
+    printf("%d ", arrCount[i]);
+  }
+  printf("\n");
+  return *arrCount;
+}
+
+// check_readability returns string & score.
+//
+// Return a string with `const char*`
+// https://flaviocopes.com/c-return-string/
+const char *check_readability(const char *str) {
+  int lenLines;
+  int lenSentences;
+  int lenWords;
+  lenLines = count();
+  printf("count: %d\n", lenLines);
+
+  return str;
+}
+
+int main(int argc, char *argv[]) {
+  int grade;
+  char str[] = "One fish. Two fish. Red fish. Blue fish."; // Grade 1.
+  size_t len = strlen(str);
+  const char *outStr = check_readability(str);
+  grade = 1;
+
+  // print_arr();
+  printf("%s\n", outStr);
+  printf("\nText: %s\n", str);
+  printf("%s\n", outStr);
+  printf("Grade %i\n", grade);
+  return 0;
+}
+/*
+ * The program should behave per the below.
+ * $ ./readability
+ *
+ * Text: In my younger and more vulnerable years my father gave me some advice
+ * that I've been turning over in my mind ever since.
+ * In my younger and more vulnerable years my father gave me some advice that
+ * I've been turning over in my mind ever since.
+ *
+ * **** Letters
+ * **** Words
+ * **** Sentences
+ * */
+
+/*
+ * Your program must prompt the user for a string of text using get_string.
+ *
+ * Your program should count the number of letters, words, and sentences in
+ * the text. You may assume that a letter is any lowercase character from a to z
+ * or any uppercase character from A to Z, any sequence of characters separated
+ * by spaces should count as a word, and that any occurrence of a period,
+ * exclamation point, or question mark indicates the end of a sentence.
+ *
+ * Your program should print as output "Grade X" where X is the grade level
+ * computed by the Coleman-Liau formula, rounded to the nearest integer.
+ *
+ * If the resulting index number is 16 or higher (equivalent to or greater
+ * than a senior undergraduate reading level), your program should output "Grade
+ * 16+" instead of giving the exact index number. If the index number is less
+ * than 1, your program should output "Before Grade 1".
+ *
+ * */
+
+/*
+ * One fish. Two fish. Red fish. Blue fish. (Before Grade 1)
+ *
+ * Would you like them here or there? I would not like them here or there. I
+ * would not like them anywhere. (Grade 2)
+ *
+ * Congratulations! Today is your day. You're off to Great Places! You're off
+ * and away! (Grade 3)
+ *
+ * Harry Potter was a highly unusual boy in many ways. For one thing, he hated
+ * the summer holidays more than any other time of year. For another, he really
+ * wanted to do his homework, but was forced to do it in secret, in the dead of
+ * the night. And he also happened to be a wizard. (Grade 5)
+ *
+ * In my younger and more vulnerable years my father gave me some advice that
+ * I've been turning over in my mind ever since. (Grade 7)
+ *
+ * Alice was beginning to get very tired of sitting by her sister on the bank,
+ * and of having nothing to do: once or twice she had peeped into the book her
+ * sister was reading, but it had no pictures or conversations in it, "and what
+ * is the use of a book," thought Alice "without pictures or conversation?"
+ * (Grade 8)
+ *
+ * When he was nearly thirteen, my brother Jem got his arm badly broken at the
+ * elbow. When it healed, and Jem's fears of never being able to play football
+ * were assuaged, he was seldom self-conscious about his injury. His left arm
+ * was somewhat shorter than his right; when he stood or walked, the back of his
+ * hand was at right angles to his body, his thumb parallel to his thigh. (Grade
+ * 8)
+ *
+ * There are more things in Heaven and Earth, Horatio, than are dreamt of in
+ * your philosophy. (Grade 9)
+ *
+ * It was a bright cold day in April, and the clocks were striking thirteen.
+ * Winston Smith, his chin nuzzled into his breast in an effort to escape the
+ * vile wind, slipped quickly through the glass doors of Victory Mansions,
+ * though not quickly enough to prevent a swirl of gritty dust from entering
+ * along with him. (Grade 10)
+ *
+ * A large class of computational problems involve the determination of
+ * properties of graphs, digraphs, integers, arrays of integers, finite families
+ * of finite sets, boolean formulas and elements of other countable domains.
+ * (Grade 16+)
+ *
+ * */
+#+end_src
+** Docs
+*** Specification
+Design and implement a program, readability, that computes the Coleman-Liau index of text.
+
+- Implement your program in a file called readability.c in a directory called readability.
+- Your program must prompt the user for a string of text using get_string.
+- Your program should count the number of letters, words, and sentences in the text. You may assume that a letter is any lowercase character from a to z or any uppercase character from A to Z, any sequence of characters separated by spaces should count as a word, and that any occurrence of a period, exclamation point, or question mark indicates the end of a sentence.
+- Your program should print as output "Grade X" where X is the grade level computed by the Coleman-Liau formula, rounded to the nearest integer.
+- If the resulting index number is 16 or higher (equivalent to or greater than a senior undergraduate reading level), your program should output "Grade 16+" instead of giving the exact index number. If the index number is less than 1, your program should output "Before Grade 1".
+*** Getting User Input
+Let’s first write some C code that just gets some text input from the user, and prints it back out. Specifically, implement in readability.c a main function that prompts the user with "Text: " using get_string and then prints that same text using printf. Be sure to #include any necessary header files.
+
+The program should behave per the below.
+#+begin_src shell
+$ ./readability
+Text: In my younger and more vulnerable years my father gave me some advice that I've been turning over in my mind ever since.
+In my younger and more vulnerable years my father gave me some advice that I've been turning over in my mind ever since.
+#+end_src
+**** Letters
+**** Words
+**** Sentences
+**** Putting it all together
+- Now it’s time to put all the pieces together! Recall that the Coleman-Liau index is computed using the formula:
+
+#+begin_example
+index = 0.0588 * L - 0.296 * S - 15.8
+#+end_example
+Here, L is the average number of letters per 100 words in the text, and S is the average number of sentences per 100 words in the text.
+
+- Modify main in readability.c so that instead of outputting the number of letters, words, and sentences, it instead outputs (only) the grade level as defined by the Coleman-Liau index (e.g. "Grade 2" or "Grade 8" or the like). Be sure to round the resulting index number to the nearest int!
+
+***** Hints
+- Recall that round is declared in math.h, per manual.cs50.io!
+- Recall that, when dividing values of type int in C, the result will also be an int, with any remainder (i.e., digits after the decimal point) discarded.
+  - Put another way, the result will be “truncated.”
+  - You might want to cast your one or more values to float before performing division when calculating L and S!
+
+**** If the resulting index number is 16 or higher (equivalent to or greater than a senior undergraduate reading level), your program should output "Grade 16+" instead of outputting an exact index number. If the index number is less than 1, your program should output "Before Grade 1".
+*** How to Test Your Code
+**** Try running your program on the following texts, to ensure you see the specified grade level.
+Be sure to copy only the text, no extra spaces.
+
+#+begin_example
+- One fish. Two fish. Red fish. Blue fish. (Before Grade 1)
+- Would you like them here or there? I would not like them here or there. I would not like them anywhere. (Grade 2)
+- Congratulations! Today is your day. You're off to Great Places! You're off and away! (Grade 3)
+- Harry Potter was a highly unusual boy in many ways. For one thing, he hated the summer holidays more than any other time of year. For another, he really wanted to do his homework, but was forced to do it in secret, in the dead of the night. And he also happened to be a wizard. (Grade 5)
+- In my younger and more vulnerable years my father gave me some advice that I've been turning over in my mind ever since. (Grade 7)
+- Alice was beginning to get very tired of sitting by her sister on the bank, and of having nothing to do: once or twice she had peeped into the book her sister was reading, but it had no pictures or conversations in it, "and what is the use of a book," thought Alice "without pictures or conversation?" (Grade 8)
+- When he was nearly thirteen, my brother Jem got his arm badly broken at the elbow. When it healed, and Jem's fears of never being able to play football were assuaged, he was seldom self-conscious about his injury. His left arm was somewhat shorter than his right; when he stood or walked, the back of his hand was at right angles to his body, his thumb parallel to his thigh. (Grade 8)
+- There are more things in Heaven and Earth, Horatio, than are dreamt of in your philosophy. (Grade 9)
+- It was a bright cold day in April, and the clocks were striking thirteen. Winston Smith, his chin nuzzled into his breast in an effort to escape the vile wind, slipped quickly through the glass doors of Victory Mansions, though not quickly enough to prevent a swirl of gritty dust from entering along with him. (Grade 10)
+- A large class of computational problems involve the determination of properties of graphs, digraphs, integers, arrays of integers, finite families of finite sets, boolean formulas and elements of other countable domains. (Grade 16+)
+#+end_example
+
+**** Execute the below to evaluate the correctness of your code further using check50. But be sure to compile and test it yourself as well!
+#+begin_example shell
+check50 cs50/problems/2022/x/readability
+#+end_example
+
+**** Execute the below to evaluate the style of your code using style50.
+#+begin_example shell
+style50 readability.c
+#+end_example
+
+* ----
+* Week 1
+* Week 2
+** Compiling source code into machine code is actually made up of four smaller steps:
+*** preprocessing
+Preprocessing involves replacing lines that start with a #, like #include.
+For example, #include <cs50.h> will tell clang to look for that header file, since it contains content, like prototypes of functions, that we want to include in our program.
+Then, clang will essentially copy and paste the contents of those header files into our program.
+
+**** For example …
+#+begin_src c
+
+#include <cs50.h>
+#include <stdio.h>
+
+int main(void)
+{
+    string name = get_string("What's your name? ");
+    printf("hello, %s\n", name);
+}
+#+end_src
+
+***** … will be preprocessed into:
+#+begin_src c
+/* ... */
+string get_string(string prompt);
+/* ... */
+int printf(string format, ...);
+/* ... */
+#+end_src
+
+#+begin_src c
+int main(void)
+{
+    string name = get_string("Name: ");
+    printf("hello, %s\n", name);
+}
+#+end_src
+- string get_string(string prompt); is a prototype of a function from cs50.h that we want to use. The function is called get_string, and it takes in a string as an argument, called prompt, and returns a value of the type string.
+- int printf(string format, ...); is a prototype from stdio.h, taking in a number of arguments, including a string for format.
+
+#+begin_src c
+int main(void)
+{
+    string name = get_string("What's your name? ");
+    printf("hello, %s\n", name);
+}
+#+end_src
+
+****** … will be preprocessed into:
+#+begin_src c
+/* ... */
+string get_string(string prompt);
+/* ... */
+int printf(string format, ...);
+/* ... */
+#+end_src
+
+#+begin_src c
+int main(void)
+{
+    string name = get_string("Name: ");
+    printf("hello, %s\n", name);
+}
+#+end_src
+- string get_string(string prompt); is a prototype of a function from cs50.h that we want to use. The function is called get_string, and it takes in a string as an argument, called prompt, and returns a value of the type string.
+- int printf(string format, ...); is a prototype from stdio.h, taking in a number of arguments, including a string for format.
+** Debugging
+*** w2_arrays/buggy.c
+**** cs50 -> debugger tool OR VSCODE's Debugger with gcc
+No need to mention *.c file (with extension)
+#+begin_src shell
+debug50 ./buggy
+#+end_src
+- Debugger
+- printf
+- Rubber duck: Talking through problems to a person or an inanimate object.
+**** DEBUGGER (Use Run or Debug taskbar with problemMatcher: gcc ) see tasks.json.
+ 1. Step over goes over the line & executes it.
+**** Using debuggers.
+Strategies:
+- 1. Diagnose the problem
+- 1.1. Using logging with printf
+*** Source Code (buggy.c)
+#+name: w2_arrays/buggy.c
+#+begin_src c :tangle ./scratch/w2_arrays/buggy.c :main no :comments link :noweb tangle
+#include <stdio.h>
+
+/*
+ * cs50 -> debugger tool
+ * No need to mention *.c file (with extension)
+ * $ debug50 ./buggy
+ * 1. Debugger
+ * 2. printf
+ * 3. Rubber duck: Talking through problems to a person or an inanimate object.
+ * */
+
+void buggy(void);
+int negative_int(void);
+
+int main(int argc, char *argv[]) {
+  printf("\n---------\n");
+  printf("~buggy.c~\n");
+  printf("---------\n");
+
+  // buggy();
+
+  int n_main = negative_int();
+  printf("negative_int: %i\n", n_main);
+
+  return 0;
+}
+
+// buggy is a debugging playground.
+void buggy(void) {
+  int length = 3;
+  int counter = 0;
+
+  // <= works instead of < => For printing 4 lines and not 3.
+  for (int i = 0; i <= length; i++) {
+    // see inside the computers memory with this debug hack.
+    printf("#\n");
+    counter++;
+    printf("counter: %i", counter);
+  }
+}
+
+// USE `STEP INTO` IN THE DEBUGGER MENU (F11) (down arrow)
+// negative_int returns a negative integer.
+int negative_int(void) {
+  int n = -1;
+
+  // Err: while loop won't wui when -ve int is entered.
+  do {
+    /* Prompt integer from user. */
+    printf("Enter negative integer: ");
+
+    scanf("%i", &n); // Doesn't work when neg < 0 => so debug.
+    printf("negative int: %i\n\n", n);
+  } while (n < 0);
+
+  return n;
+}
+#+end_src
+** Types
+*** Byte(s) per type
+- 4 bytes or 32bits
+- 8 bytes or 64bits
+
+| type   | byte(s) |
+| :----: |  :----: |
+| bool   |       1 |
+| char   |       1 |
+| double |       8 |
+| float  |       4 |
+| int    |       4 |
+| long   |       8 |
+| string |       ? |
+*** RAM: Random access memory.
+**** Black chips (Store 0s & 1s)
+0s & 1s are stored there. (e.g. billion squares)
+***** Each block stores a binary (0,1)
++-+-+-+-+-+-+-+-+
+| | | | | | | | |
++-+-+-+-+-+-+-+-+
+| | | | | | | | |
++-+-+-+-+-+-+-+-+
+| | | | | | | | |
++-+-+-+-+-+-+-+-+
+| | | | | | | | |
++-+-+-+-+-+-+-+-+
+| | | | | | | | |
++-+-+-+-+-+-+-+-+
+| | | | | | | | |
++-+-+-+-+-+-+-+-+
+| | | | | | | | |
++-+-+-+-+-+-+-+-+
+| | | | | | | | |
++-+-+-+-+-+-+-+-+
+| | | | | | | | |
++-+-+-+-+-+-+-+-+
+| | | | | | | | |
++-+-+-+-+-+-+-+-+
+| | | | | | | | |
++-+-+-+-+-+-+-+-+
+| | | | | | | | |
++-+-+-+-+-+-+-+-+
+| | | | | | | | |
++-+-+-+-+-+-+-+-+
+| | | | | | | | |
++-+-+-+-+-+-+-+-+
+| | | | | | | | |
++-+-+-+-+-+-+-+-+
+| | | | | | | | |
++-+-+-+-+-+-+-+-+
+**** char stored at top left (1 byte)
++-+-+-+-+-+-+-+-+
+|x| | | | | | | |
++-+-+-+-+-+-+-+-+
+**** int stored at top left (4 bytes)
++-+-+-+-+-+-+-+-+
+|x|x|x|x| | | | |
++-+-+-+-+-+-+-+-+
+**** double/long stored at top left (8 bytes)
++-+-+-+-+-+-+-+-+
+|x|x|x|x|x|x|x|x|
++-+-+-+-+-+-+-+-+
+*** Source Code (scores.c)
+Memory as grid/canvas to paint 0s and 1s on. Program with 3 integers
+
+#+name: w2_arrays/scores.c
+#+begin_src c :tangle ./scratch/w2_arrays/scores.c :main no :comments link :noweb tangle
+#include <stdio.h>
+
+/*
+ * cs50 -> debugger tool
+ * No need to mention *.c file (with extension)
+ * $ debug50 ./buggy
+ * 1. Debugger
+ * 2. printf
+ * 3. Rubber duck: Talking through problems to a person or an inanimate object.
+ * */
+
+void scores(void);
+// int negative_int(void);
+
+int main(int argc, char *argv[]) {
+  printf("\n---------\n");
+  printf("~scores.c~\n");
+  printf("---------\n");
+
+  scores();
+
+  // int n_main = negative_int();
+  // printf("negative_int: %i\n", n_main);
+
+  return 0;
+}
+
+// buggy is a debugging playground.
+void scores(void) {
+  int length = 3;
+  int counter = 0;
+
+  // <= works instead of < => For printing 4 lines and not 3.
+  for (int i = 0; i <= length; i++) {
+    // see inside the computers memory with this debug hack.
+    printf("#\n");
+    counter++;
+    // printf("counter: %i", counter);
+  }
+}
+
+// USE `STEP INTO` IN THE DEBUGGER MENU (F11) (down arrow)
+// negative_int returns a negative integer.
+int negative_int(void) {
+  int n = -1;
+
+  // Err: while loop won't wui when -ve int is entered.
+  do {
+    /* Prompt integer from user. */
+    printf("Enter negative integer: ");
+
+    scanf("%i", &n); // Doesn't work when neg < 0 => so debug.
+    printf("negative int: %i\n\n", n);
+  } while (n < 0);
+
+  return n;
+}
+#+end_src
