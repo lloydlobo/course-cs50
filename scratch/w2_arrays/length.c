@@ -1,5 +1,6 @@
 // https://manual.cs50.io/
 #include <stdio.h>
+#include <string.h>
 
 // int string_len(char[8]);
 int str_len(char[8]);
@@ -8,16 +9,14 @@ int str_len(char[8]);
 int main(int argc, char *argv[]) {
   char name[] = "Gandalf";
 
-  int strlen = str_len(name);
+  int out_strlen = strlen(name);
+  int out_str_len = str_len(name);
 
-  printf("strlen: %i\n", strlen);
+  printf("strlen: %i | str_len: %i\n", out_strlen, out_str_len);
 
   return 0;
 }
 
-//  Passing arguments to 'str_len' without
-// a prototype is deprecated in all versions
-// clang(-Wdeprecated - non - prototype)[10, 23]
 int str_len(char *s) {
   int i = 0;
 
