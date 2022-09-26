@@ -38,26 +38,38 @@ void hi_char(void) {
 }
 
 // 1:11:14 => https://video.cs50.io/v_luodP_mfE?screen=J0ND72qsI9U&start=4275
-// Hi! = 72 105 33 0
 // QUESTION: How does the computer know,
 // where one string begins and ends.
 // for all we have are bytes (0,1).
-//
-// CASE: use delimiter, nul character, escape char, break
 // ANSWER: \0 (shorthand for eight 0 bits). NUL
 // 0 0 0 0 0 0 0 0
 // It's the NUL character.
+// Spend 1 byte to solve problem of string separation with NUL (8 bits of 0)
+// cs50.h --> get_string() does dynamic memory allocation,
+// which grows and shrinks the array for char of string.
+//
+// s: Hi!  : 72  105 33  0
+// t: BYE! : 66  89  69  33  0
+// ------s-------   --------t---------
+// H   i   !   \0   B   Y   E   !   \0
+// 0   1   2    3   4   5   6   7    8
 void hi_string(void) {
-  // Hi! = 72   105   33   0
-  // Hi! = H    i     !    \0
   // Need NUL to separate one string from another in RAM.
-  char s[] = "Hi!"; // Using 4 bytes.
-  printf("%s = ", s);
+  char s[] = "Hi!";  // Using 4 bytes.
+  char t[] = "BYE!"; // Using 5 bytes.
+  int len_s = sizeof(s);
+  int len_t = sizeof(t);
 
-  int len = sizeof(s);
-  for (int i = 0; i < len; i++) {
-    printf("%i ", s[i]);
+  printf("Hi!  : ");
+  for (int i = 0; i < len_s; i++) {
+    printf("%3i ", s[i]);
   }
+  printf("\n");
+  printf("BYE! : ");
+  for (int i = 0; i < len_t; i++) {
+    printf("%3i ", t[i]);
+  }
+  printf("\n");
 }
 
 /* w2_arrays/hi.c ends here */
