@@ -19,6 +19,7 @@ https://cs50.harvard.edu/x/2022/weeks/
   - [[#debugging][Debugging]]
   - [[#types][Types]]
   - [[#types-array-chars][Types Array Chars]]
+  - [[#nul][NUL]]
 
 * ----
 * psets/1/mario
@@ -718,4 +719,27 @@ int negative_int(void) {
 #include <stddef.h>
 #include <stdio.h>
 
+#+end_src
+** NUL
+1:11:14 => https://video.cs50.io/v_luodP_mfE?screen=J0ND72qsI9U&start=4275
+- Hi! = 72 105 33 0
+*** QUESTION: How does the computer know, where one string begins and ends.
+- for all we have are bytes (0,1).
+- CASE: use delimiter, nul character, escape char, break
+- ANSWER: \0 (shorthand for eight 0 bits). NUL
+- 0 0 0 0 0 0 0 0
+**** It's the NUL character.
+- Hi! = 72   105   33   0
+- Hi! = H    i     !    \0
+- Need NUL to separate one string from another in RAM.
+#+begin_src c :main no
+void hi_string(void) {
+  char s[] = "Hi!"; // Using 4 bytes.
+  printf("%s = ", s);
+
+  int len = sizeof(s);
+  for (int i = 0; i < len; i++) {
+    printf("%i ", s[i]);
+  }
+}
 #+end_src

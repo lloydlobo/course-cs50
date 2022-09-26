@@ -37,6 +37,7 @@ void hi_char(void) {
   printf("%i %i %i\n", (int)c1, (int)c2, (int)c3); // ASCII value: 72 105 33
 }
 
+// 1:11:14 => https://video.cs50.io/v_luodP_mfE?screen=J0ND72qsI9U&start=4275
 // Hi! = 72 105 33 0
 // QUESTION: How does the computer know,
 // where one string begins and ends.
