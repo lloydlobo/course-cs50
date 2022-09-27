@@ -20,6 +20,7 @@ https://cs50.harvard.edu/x/2022/weeks/
   - [[#types][Types]]
   - [[#types-array-chars][Types Array Chars]]
   - [[#nul-8-bits-of-0-1-byte-spent][NUL: (8 bits of 0) 1 byte spent]]
+  - [[#ascii][ASCII]]
 
 * ----
 * psets/1/mario
@@ -789,6 +790,7 @@ void hi_string(void) {
 }
 #+end_src
 ** NUL: (8 bits of 0) 1 byte spent
+Only strings are appended with NUL at the end.
 1:11:14 => https://video.cs50.io/v_luodP_mfE?screen=J0ND72qsI9U&start=4275
 
 #+begin_example markdown
@@ -880,3 +882,6 @@ void hi_string(void) {
  ------s-------   --------t---------
  H   i   !   \0   B   Y   E   !   \0
  0   1   2    3   4   5   6   7    8
+** ASCII
+https://asciichart.com/
+*** ascii 32 is SP (space)
