@@ -60,6 +60,9 @@ char char_to_uppercase(char *str) {
        */
       // https://man7.org/linux/man-pages/man3/toupper.3.html
       // Return the uppercase version of C.
+      // If c is a lowercase letter (a through z), this function returns its
+      // uppercase equivalent (A through Z). If c is not a lowercase letter,
+      // this function returns c itself.
       str[i] = toupper(str[i]); // str[i] = s - 32;
     }
   }
