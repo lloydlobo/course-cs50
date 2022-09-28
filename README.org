@@ -1,7 +1,7 @@
 #+title: CS50 2022
 #+startup: fold
 -----
-
+https://manual.cs50.io/
 https://cs50.harvard.edu/x/2022/weeks/
 
 * Table of Contents :TOC:
