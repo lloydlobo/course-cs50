@@ -1,5 +1,5 @@
 /* [[file:../../README.org::w2_arrays/length.c][w2_arrays/length.c]] */
-//
+
 // https://manual.cs50.io/
 #include <stdio.h>
 #include <string.h>
