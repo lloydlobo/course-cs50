@@ -23,47 +23,30 @@ import (
 )
 
 func Execute() {
-	grade := readability()
-	fmt.Printf("\ngrade: %v\n", grade) // 3
+	grade := Readability()
+	fmt.Printf("grade: %v\n\n", grade) // 3
 }
 
-// "example.com/readability/cli_index"
-//
-// _ = cli_index.ColemanLiauReadabilityIndex(gat)
-// fmt.Printf("grade: %v\n", grade)
-func readability() int {
-	fmt.Printf("\nreadability ->\n\n")
+func Readability() int {
 	gat := tc.GetGradeAndText()
 	return int(Run(gat))
 }
 
-// $ ./readability
-// Text: Congratulations! Today is your day. You're off to Great Places! You're off and away!
-// Grade 3
-//
-// The text the user inputted has 65 letters, 4 sentences, and 14 words.
-// 65 letters per 14 words is an average of about 464.29 letters per 100 words
-// (because 65 / 14 * 100 = 464.29).
-//
-// And 4 sentences per 14 words is an average of about 28.57 sentences per 100 words
-// (because 4 / 14 * 100 = 28.57).
-//
-// Plugged into the Coleman-Liau formula, and rounded to the nearest integer,
-
 // Run()
 //
 // 3, Congratulations! Today is your day. You're off to Great Places! You're off and away!
-// -> 14 words.
 // 64 letters per 14 words = avg(464.29 Letters / 100 words). (because 65 / 14 * 100 = 464.29).
 // 4 sentences per 14 words = avg(28.57 Sentences / 100 words). (because 4 / 14 * 100 = 28.57).
 func Run(t []tc.GradeAndText) float64 {
 	t3 := t[2].Text
-	lw, ll, ls := LenWords(t3), LenLetters(t3), LenSentences(t3)
+	lw, ll, ls := LenWords(t3), LenLetters(t3), LenSentences(t3) // -> 14 words.
 
-	fmt.Printf("l:%v; s:%v; w:%v", ll, ls, lw)
+	fmt.Printf("l:%v; s:%v; w:%v\n", ll, ls, lw)
 	return GetIndexCLIPer100W(lw, ll, ls)
 }
 
+// GetIndexCLIPer100W()
+//
 // we get an answer of Grade 3
 // (because 0.0588 * 464.29 - 0.296 * 28.57 - 15.8 = 3):
 func GetIndexCLIPer100W(lw, ll, ls int) float64 {
@@ -71,19 +54,22 @@ func GetIndexCLIPer100W(lw, ll, ls int) float64 {
 	return 0.0588*avgl - 0.296*avgS - 15.8
 }
 
+// LenWords()
 func LenWords(t string) int {
 	return len(strings.Split(t, " ")) // 14 words.
 }
 
+// LenLetters()
+//
 // 64 letters per 14 words = avg(464.29 Letters / 100 words).
 // (because 65 / 14 * 100 = 464.29).
 func LenLetters(s string) int {
-	var (
-		sLow  = strings.ToLower(s)
-		space = len(strings.Split(s, ""))
-	)
-	nonAlphabets := IndexNonAlphabets([]byte(sLow))
-	return space - len(nonAlphabets)
+	sLow := strings.ToLower(s)
+	lenAll := len(strings.Split(s, ""))
+
+	idxNonAlphabets := IndexNonAlphabets([]byte(sLow))
+
+	return lenAll - len(idxNonAlphabets)
 }
 
 // LenSentences() find period "." or ! or "?"
@@ -98,6 +84,7 @@ func LenSentences(s string) int {
 }
 
 // IndexNonAlphabets return slice of index of non-alphabets.
+//
 // ascii not in the range of: 65-90 (A-Z) && 97-122 (a-z)
 // https://asciichart.com/
 func IndexNonAlphabets(B []byte) (pos []int) {
