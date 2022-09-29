@@ -22,16 +22,19 @@ import (
 	tc "example.com/readability/testcases"
 )
 
+func Execute() {
+	grade := readability()
+	fmt.Printf("\ngrade: %v\n", grade) // 3
+}
+
 // "example.com/readability/cli_index"
-func readability() {
+//
+// _ = cli_index.ColemanLiauReadabilityIndex(gat)
+// fmt.Printf("grade: %v\n", grade)
+func readability() int {
 	fmt.Printf("\nreadability ->\n\n")
 	gat := tc.GetGradeAndText()
-	Run(gat)
-	// _ = cli_index.ColemanLiauReadabilityIndex(gat)
-	// fmt.Printf("grade: %v\n", grade)
-}
-func Execute() {
-	readability()
+	return int(Run(gat))
 }
 
 // $ ./readability
@@ -46,40 +49,58 @@ func Execute() {
 // (because 4 / 14 * 100 = 28.57).
 //
 // Plugged into the Coleman-Liau formula, and rounded to the nearest integer,
-func Run(t []tc.GradeAndText) {
-	var (
-		gt3    = t[2]
-		g3, t3 = gt3.Grade, gt3.Text
-	)
-	fmt.Println(g3, t3) // 3, Congratulations! Today is your day. You're off to Great Places! You're off and away!
 
-	lw := lenWords(t3)     // -> 14 words.
-	ll := lenLetters(t3)   // 64 letters per 14 words = avg(464.29 Letters / 100 words). (because 65 / 14 * 100 = 464.29).
-	ls := lenSentences(t3) // 4 sentences per 14 words = avg(28.57 Sentences / 100 words). (because 4 / 14 * 100 = 28.57).
+// Run()
+//
+// 3, Congratulations! Today is your day. You're off to Great Places! You're off and away!
+// -> 14 words.
+// 64 letters per 14 words = avg(464.29 Letters / 100 words). (because 65 / 14 * 100 = 464.29).
+// 4 sentences per 14 words = avg(28.57 Sentences / 100 words). (because 4 / 14 * 100 = 28.57).
+func Run(t []tc.GradeAndText) float64 {
+	t3 := t[2].Text
+	lw, ll, ls := LenWords(t3), LenLetters(t3), LenSentences(t3)
+
 	fmt.Printf("l:%v; s:%v; w:%v", ll, ls, lw)
-	// we get an answer of Grade 3
-	// (because 0.0588 * 464.29 - 0.296 * 28.57 - 15.8 = 3):
+	return GetIndexCLIPer100W(lw, ll, ls)
 }
 
-func lenWords(t string) int {
+// we get an answer of Grade 3
+// (because 0.0588 * 464.29 - 0.296 * 28.57 - 15.8 = 3):
+func GetIndexCLIPer100W(lw, ll, ls int) float64 {
+	avgl, avgS := 100*float64(ll)/float64(lw), 100*float64(ls)/float64(lw)
+	return 0.0588*avgl - 0.296*avgS - 15.8
+}
+
+func LenWords(t string) int {
 	return len(strings.Split(t, " ")) // 14 words.
 }
 
 // 64 letters per 14 words = avg(464.29 Letters / 100 words).
 // (because 65 / 14 * 100 = 464.29).
-func lenLetters(s string) int {
+func LenLetters(s string) int {
 	var (
 		sLow  = strings.ToLower(s)
 		space = len(strings.Split(s, ""))
 	)
-	nonAlphabets := indexNonAlphabets([]byte(sLow))
+	nonAlphabets := IndexNonAlphabets([]byte(sLow))
 	return space - len(nonAlphabets)
 }
 
-// indexNonAlphabets return slice of index of non-alphabets.
+// LenSentences() find period "." or ! or "?"
+//
+// fmt.Printf("slicePeriod: %v\n", slicePeriod)
+// fmt.Printf("n == 4?: %v; got: %v\n", n == 4, n)
+func LenSentences(s string) int {
+	B := []byte(strings.ToLower(s))
+	sntc := FindLineTerminators(B)
+
+	return len(sntc)
+}
+
+// IndexNonAlphabets return slice of index of non-alphabets.
 // ascii not in the range of: 65-90 (A-Z) && 97-122 (a-z)
 // https://asciichart.com/
-func indexNonAlphabets(B []byte) (pos []int) {
+func IndexNonAlphabets(B []byte) (pos []int) {
 	for i := 0; i < len(B); i++ {
 		b := B[i]
 		isAToZ := b >= 65+32 && b <= 90+32
@@ -90,7 +111,17 @@ func indexNonAlphabets(B []byte) (pos []int) {
 	return
 }
 
-func lenSentences(t string) (n int) {
+// FindLineTerminators() finds the positions of line ends.
+//
+// It find period "." or ! or "?".
+func FindLineTerminators(B []byte) (pos []int) {
+	for i := 0; i < len(B); i++ {
+		b := B[i]
+		isDot, isQuestionMark, isExclamation := b == 46, b == 63, b == 33
+		if isDot || isQuestionMark || isExclamation {
+			pos = append(pos, i)
+		}
+	}
 	return
 }
 
