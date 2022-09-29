@@ -40,8 +40,7 @@ func Readability() int {
 func Run(t []tc.GradeAndText) float64 {
 	t3 := t[2].Text
 	lw, ll, ls := LenWords(t3), LenLetters(t3), LenSentences(t3) // -> 14 words.
-
-	fmt.Printf("l:%v; s:%v; w:%v\n", ll, ls, lw)
+	// fmt.Printf("l:%v; s:%v; w:%v\n", ll, ls, lw)
 	return GetIndexCLIPer100W(lw, ll, ls)
 }
 
