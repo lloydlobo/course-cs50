@@ -1,0 +1,6 @@
+-v
+123 -v
+12345678 -v
+12345678
+main.go main_test.go
+cli_index/cli_index.go cli_index/cli_index_test.go helper/helper.go main.go main_test.go readability/count.go readability/readability.go readability/readability_test.go testcases/store_testcases.go testcases/testcases.go
