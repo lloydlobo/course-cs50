@@ -16,31 +16,61 @@ Package readability
 package readability
 
 import (
-	"fmt"
 	"strings"
 
 	tc "example.com/readability/testcases"
 )
 
-func Execute() {
-	grade := Readability()
-	fmt.Printf("grade: %v\n\n", grade) // 3
+func Execute(s tc.GradeAndText) int {
+	return Readability(s)
 }
 
-func Readability() int {
-	gat := tc.GetGradeAndText()
-	return int(Run(gat))
+// === RUN   TestRunMain
+// out: -9
+// out: 2
+// out: 3
+// out: 4
+// out: 7
+// out: 7
+// out: 7
+// out: 8
+// out: 9
+// out: 18
+// --- PASS: TestRunMain (0.00s)
+// === RUN   TestReadabilityG3
+// --- PASS: TestReadabilityG3 (0.00s)
+// === RUN   TestReadability
+//
+//	main_test.go:39: 0: Readability() = -9; want: 1
+//	main_test.go:39: 3: Readability() = 4; want: 5
+//	main_test.go:39: 5: Readability() = 7; want: 8
+//	main_test.go:39: 6: Readability() = 7; want: 8
+//	main_test.go:39: 7: Readability() = 8; want: 9
+//	main_test.go:39: 8: Readability() = 9; want: 10
+//	main_test.go:39: 9: Readability() = 18; want: 16
+//
+// --- FAIL: TestReadability (0.00s)
+// FAIL
+// exit status 1
+// FAIL    example.com/readability 0.002s
+func Readability(s tc.GradeAndText) int {
+	// sliceGradeText := tc.GetGradeAndText()
+	return int(Run(s))
 }
 
 // Run()
 //
-// 3, Congratulations! Today is your day. You're off to Great Places! You're off and away!
-// 64 letters per 14 words = avg(464.29 Letters / 100 words). (because 65 / 14 * 100 = 464.29).
-// 4 sentences per 14 words = avg(28.57 Sentences / 100 words). (because 4 / 14 * 100 = 28.57).
-func Run(t []tc.GradeAndText) float64 {
-	t3 := t[2].Text
+// Example:
+//
+// Congratulations! Today is your day. You're off to Great Places! You're off and away!
+//
+// Explanation:
+//
+//	64 letters per 14 words = avg(464.29 Letters / 100 words). (because 65 / 14 * 100 = 464.29).
+//	4 sentences per 14 words = avg(28.57 Sentences / 100 words). (because 4 / 14 * 100 = 28.57).
+func Run(t tc.GradeAndText) float64 {
+	t3 := t.Text
 	lw, ll, ls := LenWords(t3), LenLetters(t3), LenSentences(t3) // -> 14 words.
-	// fmt.Printf("l:%v; s:%v; w:%v\n", ll, ls, lw)
 	return GetIndexCLIPer100W(lw, ll, ls)
 }
 
@@ -71,6 +101,15 @@ func LenLetters(s string) int {
 	return lenAll - len(idxNonAlphabets)
 }
 
+// FIXME:: MAYBE 100 words. for each 100 words calculate average
+// TODO!!!!!!!!!!!!!!!!!! IF ITS THE LAST SENTENCE MAYBE ERRRR
+// LenSentences() find period "." or ! or "?"
+func GetAverageFOrEach100Words() {
+	panic("function unimplemented!")
+}
+
+// FIXME:: MAYBE 100 words. for each 100 words calculate average
+// TODO!!!!!!!!!!!!!!!!!! IF ITS THE LAST SENTENCE MAYBE ERRRR
 // LenSentences() find period "." or ! or "?"
 //
 // fmt.Printf("slicePeriod: %v\n", slicePeriod)

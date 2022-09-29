@@ -4,8 +4,11 @@ package testcases
 func GetGradesInt() []int {
 	var g []int
 
-	G_1, G_2, G_3, G_5, G_7, G_8_0, G_8_1, G_9, G_10, G_16_PLUS := 1, 2, 3, 5, 7, 8, 8, 9, 10, 16
-	g = append(g, G_1, G_2, G_3, G_5, G_7, G_8_0, G_8_1, G_9, G_10, G_16_PLUS)
+	G_1, G_2, G_3, G_5, G_7, G_8_0, G_8_1, G_9, G_10, G_16_PLUS :=
+		-9, 2, 3, 5, 7, 8, 8, 9, 10, 16
+	g = append(g,
+		G_1, G_2, G_3, G_5, G_7, G_8_0, G_8_1, G_9, G_10, G_16_PLUS,
+	)
 
 	return g
 }

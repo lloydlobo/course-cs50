@@ -1,12 +1,19 @@
 package main
 
 import (
+	"fmt"
+
 	"example.com/readability/readability"
+	"example.com/readability/testcases"
 )
 
 // Function main() uses Execute of package readability.
 func main() {
-	readability.Execute()
+	tc := testcases.GetGradeAndText()
+	for i := 0; i < len(tc); i++ {
+		out := readability.Execute(tc[i])
+		fmt.Printf("out: %v\n", out)
+	}
 }
 
 // DEVLOG
