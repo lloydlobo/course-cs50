@@ -51,7 +51,7 @@ func Execute(s string) (out string) {
 		out = fmt.Sprintf("\nText: %s\nGrade %2s\n",
 			s, strconv.FormatInt(grade, 10))
 	}
-	fmt.Printf("got: %v\n\n", grade)
+	// fmt.Printf("got: %v\n\n", grade)
 	return out
 }
 
@@ -83,46 +83,54 @@ func (cl ColemanLiau) LenWords(s string) int {
 //	 w:14, s:1, l:65
 //
 // fmt.Printf("s: %v\n", s) mb := make(map[int]byte) ms := make(map[int]string)
+//
+// G_8_0     =
+//
+//	Alice was beginning to get very tired of sitting by her sister on the bank,
+//	and of having nothing to do: once or twice she had peeped into the book her sister was reading,
+//	but it had no pictures or conversations in it, \"and what is the use of a book,\"
+//	thought Alice \"without pictures or conversation?\"
 func (cl ColemanLiau) LenSentence(s string) int {
 	cl.Text = s
 	var (
-		bytes   = []byte{}
-		counter = 0
-		t       = &cl.Text
-		n       = len(*t)
+		bytes = []byte{}
+		t     = &cl.Text
+		n     = len(*t)
 	)
 
 	for i := 0; i < n; i++ {
+		var isPrevCharEnd bool
+		// debugByteString(bCurr, bNext, i, mb, ms)
 		bCurr := byte((*t)[i])
 		bNext := byte((*t)[(i+1)%n])
 
+		// Fallback: Example: ...thought Alice "without pictures or conversation?"
+		if i == n-2 {
+			isPrevCharEnd = (*t)[i-1] == '?' || (*t)[i-1] == '!' || (*t)[i-1] == '.'
+		}
+		if bCurr == byte('"') && isPrevCharEnd {
+			bytes = append(bytes, bCurr)
+		}
+
 		if bCurr == byte('.') && bNext == byte(' ') {
 			bytes = append(bytes, bCurr)
-			counter++
-			// debugByteString(bCurr, bNext, i, mb, ms)
 		} else if bCurr == byte('.') && i == n-1 {
 			bytes = append(bytes, bCurr)
-			counter++
 		}
 
 		if bCurr == byte('?') || bCurr == byte('!') {
 			if bNext == byte(' ') {
 				bytes = append(bytes, bCurr)
-				counter++
-				// debugByteString(bCurr, bNext, i, mb, ms)
 			} else if bCurr == byte('!') || bCurr == byte('!') && i == n-1 {
 				bytes = append(bytes, bCurr)
-				counter++
-				// debugByteString(bCurr, bNext, i, mb, ms)
 			}
 		}
 	}
-
-	// fmt.Printf("\nmb: %v", mb)
-	// fmt.Printf("\nms: %v\n", ms)
-	fmt.Printf("bytes: %v\n", bytes)
-	fmt.Printf("counter: %v\n", counter)
-	return len(bytes)
+	out := len(bytes)
+	if out == 0 {
+		out++
+	}
+	return out
 }
 
 // ms[i], ms[i+1], mb[i], mb[i+1] = string(bCurr), string(bNext), bCurr, byte(bNext)

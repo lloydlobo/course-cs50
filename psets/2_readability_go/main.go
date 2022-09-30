@@ -17,7 +17,5 @@ func main() {
 		out := readability.Execute(text[i])
 		outs = append(outs, out)
 	}
-
-	// fmt.Println(outs)
-	fmt.Println()
+	fmt.Println(outs)
 }
