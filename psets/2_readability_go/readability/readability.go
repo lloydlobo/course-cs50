@@ -2,6 +2,7 @@ package readability
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 )
@@ -13,8 +14,22 @@ type ColemanLiau struct {
 // Execute()
 //
 // Example:
-// Text: Congratulations! Today is your day. You're off to Great Places! You're off and away!
-// Grade 3
+//
+//	Text: Harry Potter was a highly unusual boy in many ways.
+//	For one thing, he hated the summer holidays more than any other time of year.
+//	For another, he really wanted to do his homework,
+//	but was forced to do it in secret, in the dead of the night.
+//	And he also happened to be a wizard.
+//	Grade 5
+//
+// This text has 214 letters, 4 sentences, and 56 words.
+// That comes out to about 382.14 letters per 100 words,
+// and 7.14 sentences per 100 words.
+//
+// Example:
+//
+//	Text: Congratulations! Today is your day. You're off to Great Places! You're off and away!
+//	Grade 3
 func Execute(s string) (output string) {
 	str := strings.ToLower(s)
 	cli := ColemanLiau{}
@@ -24,26 +39,42 @@ func Execute(s string) (output string) {
 	go func() { lettC <- cli.LenLetters(str) }()
 	go func() { wordC <- cli.LenWords(str) }()
 
-	// if [i]byte == 32, it's a space.
-	// cli.SpaceCount(s)
 	nw := <-wordC
 	nl := <-lettC
 	ns := <-sentenC
 
-	fmt.Println(nw, nl, ns)
+	avgS, avgL := cli.AverageSL100W(nw, ns, nl)
+	grade := int64(cli.GetGrade(avgS, avgL))
 
-	grade := int64(cli.GetGrade(float64(nl), float64(ns), float64(nw)))
+	if grade <= 1 {
+		output = fmt.Sprintf("\nText: %s\nGrade %2s\n", s, "Before 1")
+	} else if grade > 15 {
+		output = fmt.Sprintf("\nText: %s\nGrade %2s\n", s, "16+")
+	} else {
+		output = fmt.Sprintf("\nText: %s\nGrade %2s\n",
+			s, strconv.FormatInt(grade, 10))
+	}
 
-	output = fmt.Sprintf("\nText: %s\nGrade %2s\n",
-		s, strconv.FormatInt(grade, 10),
-	)
 	return output
+}
+
+// `CLI` = 0.0588 * `L` - 0.296 * `S` - 15.8
+// `L` is the average number of letters per 100 words.
+// `S` is the average number of sentences per 100 words.
+func (cli ColemanLiau) GetGrade(s, l float64) float64 {
+	grade := 0.0588*l - 0.296*s - 15.8
+	return math.Round(grade)
+}
+
+func (cl ColemanLiau) AverageSL100W(w, s, l int) (sentenceAvg float64, letterAvg float64) {
+	fw, fs, fl := float64(w), float64(s), float64(l)
+	sentenceAvg, letterAvg = 100*fs/fw, 100*fl/fw
+	return sentenceAvg, letterAvg
 }
 
 func (cl ColemanLiau) LenWords(s string) int {
 	cl.Text = s
 	word := strings.Split(cl.Text, " ")
-
 	return len(word)
 }
 
@@ -57,14 +88,13 @@ func (cl ColemanLiau) LenLetters(s string) int {
 			bytes = append(bytes, b)
 		}
 	}
-
 	return len(bytes)
 }
 
+// if [i]byte == 32, it's a space. cli.SpaceCount(s)
 func (cl ColemanLiau) LenSentence(s string) int {
 	bytes := []byte{}
 	cl.Text = s
-
 	t := &cl.Text
 	n := len(*t)
 
@@ -75,18 +105,12 @@ func (cl ColemanLiau) LenSentence(s string) int {
 			bytes = append(bytes, b)
 		}
 	}
-
 	return len(bytes)
 }
 
 func (cl ColemanLiau) TotalLen(s string) int {
 	cl.Text = s // receiver.Text
 	return len(cl.Text)
-}
-
-func (cli ColemanLiau) GetGrade(l, s, w float64) float64 {
-	avgLetters, avgSentence := 100*l/w, 100*s/w
-	return 0.0588*avgLetters - 0.296*avgSentence - 15.8
 }
 
 /*
@@ -113,6 +137,21 @@ Package readability
     than a senior undergraduate reading level), your program should output "Grade
     16+" instead of giving the exact index number. If the index number is less
     than 1, your program should output "Before Grade 1".
+*/
+/*
+$ ./readability
+    Text: Harry Potter was a highly unusual boy in many ways.
+    For one thing, he hated the summer holidays more than any other time of year.
+    For another, he really wanted to do his homework,
+    but was forced to do it in secret, in the dead of the night.
+    And he also happened to be a wizard.
+    Grade 5
+
+    This text has 214 letters, 4 sentences, and 56 words.
+    That comes out to about 382.14 letters per 100 words,
+    and 7.14 sentences per 100 words.
+    Plugged into the Coleman-Liau formula,
+    we get a fifth-grade reading level.
 */
 func GetGradesInt() []int {
 	var g []int
