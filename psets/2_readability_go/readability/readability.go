@@ -1,3 +1,104 @@
+package readability
+
+import (
+	"fmt"
+	"strconv"
+	"strings"
+)
+
+type ColemanLiau struct {
+	Text string
+}
+
+// Execute()
+//
+// Example:
+// Text: Congratulations! Today is your day. You're off to Great Places! You're off and away!
+// Grade 3
+func Execute(s string) (output string) {
+	str := strings.ToLower(s)
+	cli := ColemanLiau{}
+	lettC, wordC, sentenC := make(chan int), make(chan int), make(chan int)
+
+	go func() { sentenC <- cli.LenSentence(str) }()
+	go func() { lettC <- cli.LenLetters(str) }()
+	go func() { wordC <- cli.LenWords(str) }()
+
+	// if [i]byte == 32, it's a space.
+	// cli.SpaceCount(s)
+	nw := <-wordC
+	nl := <-lettC
+	ns := <-sentenC
+
+	fmt.Println(nw, nl, ns)
+
+	grade := int64(cli.GetGrade(float64(nl), float64(ns), float64(nw)))
+
+	output = fmt.Sprintf("\nText: %s\nGrade %2s\n",
+		s, strconv.FormatInt(grade, 10),
+	)
+	return output
+}
+
+func (cl ColemanLiau) LenWords(s string) int {
+	cl.Text = s
+	word := strings.Split(cl.Text, " ")
+
+	return len(word)
+}
+
+func (cl ColemanLiau) LenLetters(s string) int {
+	cl.Text = s       // receiver.Text
+	bytes := []byte{} // cache bytes that are letters.
+
+	for i := 0; i < len(s); i++ {
+		b := byte(cl.Text[i])
+		if b > 64+32 && b < 91+32 {
+			bytes = append(bytes, b)
+		}
+	}
+
+	return len(bytes)
+}
+
+func (cl ColemanLiau) LenSentence(s string) int {
+	bytes := []byte{}
+	cl.Text = s
+
+	t := &cl.Text
+	n := len(*t)
+
+	for i := 0; i < n; i++ {
+		b := byte((*t)[i])
+
+		if b == byte('.') {
+			bytes = append(bytes, b)
+		}
+	}
+
+	return len(bytes)
+}
+
+func (cl ColemanLiau) TotalLen(s string) int {
+	cl.Text = s // receiver.Text
+	return len(cl.Text)
+}
+
+func (cli ColemanLiau) GetGrade(l, s, w float64) float64 {
+	avgLetters, avgSentence := 100*l/w, 100*s/w
+	return 0.0588*avgLetters - 0.296*avgSentence - 15.8
+}
+
+/*
+ GetIndexCLIPer100W()
+ (because 0.0588 * 464.29 - 0.296 * 28.57 - 15.8 = 3):
+
+ Run()
+ Congratulations! Today is your day. You're off to Great Places! You're off and away!
+
+	64 letters per 14 words = avg(464.29 Letters / 100 words). (because 65 / 14 * 100 = 464.29).
+	4 sentences per 14 words = avg(28.57 Sentences / 100 words). (because 4 / 14 * 100 = 28.57).
+*/
 /*
 Package readability
   - Your program must prompt the user for a string of text using get_string.
@@ -13,170 +114,53 @@ Package readability
     16+" instead of giving the exact index number. If the index number is less
     than 1, your program should output "Before Grade 1".
 */
-package readability
+func GetGradesInt() []int {
+	var g []int
 
-import (
-	"strings"
+	G_1, G_2, G_3, G_5, G_7, G_8_0, G_8_1, G_9, G_10, G_16_PLUS :=
+		-9, 2, 3, 5, 7, 8, 8, 9, 10, 16
+	g = append(g,
+		G_1, G_2, G_3, G_5, G_7, G_8_0, G_8_1, G_9, G_10, G_16_PLUS,
+	)
 
-	tc "example.com/readability/testcases"
-)
-
-func Execute(s tc.GradeAndText) int {
-	return Readability(s)
+	return g
 }
 
-// === RUN   TestRunMain
-// out: -9
-// out: 2
-// out: 3
-// out: 4
-// out: 7
-// out: 7
-// out: 7
-// out: 8
-// out: 9
-// out: 18
-// --- PASS: TestRunMain (0.00s)
-// === RUN   TestReadabilityG3
-// --- PASS: TestReadabilityG3 (0.00s)
-// === RUN   TestReadability
-//
-//	main_test.go:39: 0: Readability() = -9; want: 1
-//	main_test.go:39: 3: Readability() = 4; want: 5
-//	main_test.go:39: 5: Readability() = 7; want: 8
-//	main_test.go:39: 6: Readability() = 7; want: 8
-//	main_test.go:39: 7: Readability() = 8; want: 9
-//	main_test.go:39: 8: Readability() = 9; want: 10
-//	main_test.go:39: 9: Readability() = 18; want: 16
-//
-// --- FAIL: TestReadability (0.00s)
-// FAIL
-// exit status 1
-// FAIL    example.com/readability 0.002s
-func Readability(s tc.GradeAndText) int {
-	// sliceGradeText := tc.GetGradeAndText()
-	return int(Run(s))
+// getText() returns slice array of text.
+func GetTextStr() []string {
+	var (
+		t         []string
+		G_1       = "One fish. Two fish. Red fish. Blue fish." // Grade 1.
+		G_2       = "Would you like them here or there? I would not like them here or there. I would not like them anywhere."
+		G_3       = "Congratulations! Today is your day. You're off to Great Places! You're off and away!"
+		G_5       = "Harry Potter was a highly unusual boy in many ways. For one thing, he hated the summer holidays more than any other time of year. For another, he really wanted to do his homework, but was forced to do it in secret, in the dead of the night. And he also happened to be a wizard."
+		G_7       = "In my younger and more vulnerable years my father gave me some advice that I've been turning over in my mind ever since."
+		G_8_0     = "Alice was beginning to get very tired of sitting by her sister on the bank, and of having nothing to do: once or twice she had peeped into the book her sister was reading, but it had no pictures or conversations in it, \"and what is the use of a book,\" thought Alice \"without pictures or conversation?\" "
+		G_8_1     = "When he was nearly thirteen, my brother Jem got his arm badly broken at the elbow. When it healed, and Jem's fears of never being able to play football were assuaged, he was seldom self-conscious about his injury. His left arm was somewhat shorter than his right; when he stood or walked, the back of his hand was at right angles to his body, his thumb parallel to his thigh."
+		G_9       = "There are more things in Heaven and Earth, Horatio, than are dreamt of in your philosophy."
+		G_10      = "It was a bright cold day in April, and the clocks were striking thirteen. Winston Smith, his chin nuzzled into his breast in an effort to escape the vile wind, slipped quickly through the glass doors of Victory Mansions, though not quickly enough to prevent a swirl of gritty dust from entering along with him."
+		G_16_PLUS = "A large class of computational problems involve the determination of properties of graphs, digraphs, integers, arrays of integers, finite families of finite sets, boolean formulas and elements of other countable domains."
+	)
+	t = append(t, G_1, G_2, G_3, G_5, G_7, G_8_0, G_8_1, G_9, G_10, G_16_PLUS)
+
+	return t
 }
 
-// Run()
-//
-// Example:
-//
-// Congratulations! Today is your day. You're off to Great Places! You're off and away!
-//
-// Explanation:
-//
-//	64 letters per 14 words = avg(464.29 Letters / 100 words). (because 65 / 14 * 100 = 464.29).
-//	4 sentences per 14 words = avg(28.57 Sentences / 100 words). (because 4 / 14 * 100 = 28.57).
-func Run(t tc.GradeAndText) float64 {
-	t3 := t.Text
-	lw, ll, ls := LenWords(t3), LenLetters(t3), LenSentences(t3) // -> 14 words.
-	return GetIndexCLIPer100W(lw, ll, ls)
-}
+// type CLI struct {
+// 	GAT testcases.GradeAndText
+// }
 
-// GetIndexCLIPer100W()
-//
-// we get an answer of Grade 3
-// (because 0.0588 * 464.29 - 0.296 * 28.57 - 15.8 = 3):
-func GetIndexCLIPer100W(lw, ll, ls int) float64 {
-	avgl, avgS := 100*float64(ll)/float64(lw), 100*float64(ls)/float64(lw)
-	return 0.0588*avgl - 0.296*avgS - 15.8
-}
+// func Execute(s testcases.GradeAndText) int {
+// 	cli := CLI{}
+// 	cli.GAT = s
 
-// LenWords()
-func LenWords(t string) int {
-	return len(strings.Split(t, " ")) // 14 words.
-}
+// 	out := CLI.LettersLen(cli)
+// 	// fmt.Printf("%v\n", cli.GAT.Text)
+// 	return out
+// }
 
-// LenLetters()
-//
-// 64 letters per 14 words = avg(464.29 Letters / 100 words).
-// (because 65 / 14 * 100 = 464.29).
-func LenLetters(s string) int {
-	sLow := strings.ToLower(s)
-	lenAll := len(strings.Split(s, ""))
-
-	idxNonAlphabets := IndexNonAlphabets([]byte(sLow))
-
-	return lenAll - len(idxNonAlphabets)
-}
-
-// FIXME:: MAYBE 100 words. for each 100 words calculate average
-// TODO!!!!!!!!!!!!!!!!!! IF ITS THE LAST SENTENCE MAYBE ERRRR
-// LenSentences() find period "." or ! or "?"
-func GetAverageFOrEach100Words() {
-	panic("function unimplemented!")
-}
-
-// FIXME:: MAYBE 100 words. for each 100 words calculate average
-// TODO!!!!!!!!!!!!!!!!!! IF ITS THE LAST SENTENCE MAYBE ERRRR
-// LenSentences() find period "." or ! or "?"
-//
-// fmt.Printf("slicePeriod: %v\n", slicePeriod)
-// fmt.Printf("n == 4?: %v; got: %v\n", n == 4, n)
-func LenSentences(s string) int {
-	B := []byte(strings.ToLower(s))
-	sntc := FindLineTerminators(B)
-
-	return len(sntc)
-}
-
-// IndexNonAlphabets return slice of index of non-alphabets.
-//
-// ascii not in the range of: 65-90 (A-Z) && 97-122 (a-z)
-// https://asciichart.com/
-func IndexNonAlphabets(B []byte) (pos []int) {
-	for i := 0; i < len(B); i++ {
-		b := B[i]
-		isAToZ := b >= 65+32 && b <= 90+32
-		if !isAToZ {
-			pos = append(pos, i)
-		}
-	}
-	return
-}
-
-// FindLineTerminators() finds the positions of line ends.
-//
-// It find period "." or ! or "?".
-func FindLineTerminators(B []byte) (pos []int) {
-	for i := 0; i < len(B); i++ {
-		b := B[i]
-		isDot, isQuestionMark, isExclamation := b == 46, b == 63, b == 33
-		if isDot || isQuestionMark || isExclamation {
-			pos = append(pos, i)
-		}
-	}
-	return
-}
-
-// TODO: Run this when *****okejoke****** binary,
-//   returns the string and this grades it.
-//
-// https://cs50.harvard.edu/x/2022/psets/2/readability/
-// A number of “readability tests” have been developed over the years
-// that define formulas for computing the reading level of a text.
-// One such readability test is the Coleman-Liau index.
-// The Coleman-Liau index of a text is designed to
-// output that (U.S.) grade level that is needed to understand some text.
-// The formula is
-// index = 0.0588 * L - 0.296 * S - 15.8
-// where L is the average number of letters per 100 words in the text,
-// and S is the average number of sentences per 100 words in the text.
-//
-// Let’s write a program called readability that takes a text
-// and determines its reading level.
-// For example, if user types in a line of text from Dr. Seuss,
-// the program should behave as follows:
-//
-// $ ./readability
-// Text: Congratulations! Today is your day. You're off to Great Places! You're off and away!
-// Grade 3
-// The text the user inputted has 65 letters, 4 sentences, and 14 words.
-// 65 letters per 14 words is an average of about 464.29 letters per 100 words
-// (because 65 / 14 * 100 = 464.29).
-// And 4 sentences per 14 words is an average of about 28.57 sentences per 100 words
-// (because 4 / 14 * 100 = 28.57).
-// Plugged into the Coleman-Liau formula, and rounded to the nearest integer,
-// we get an answer of 3 (because 0.0588 * 464.29 - 0.296 * 28.57 - 15.8 = 3):
-// so this passage is at a third-grade reading level.
+// func (s CLI) LettersLen() int {
+// 	n := len(s.GAT.Text)
+// 	fmt.Printf("n: %v\n", n)
+// 	return 0
+// }
