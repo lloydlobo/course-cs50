@@ -1,3 +1,18 @@
+/*
+Package readability
+  - Your program must prompt the user for a string of text using get_string.
+  - Your program should count the number of letters, words, and sentences in
+    the text. You may assume that a letter is any lowercase character from a to z
+    or any uppercase character from A to Z, any sequence of characters separated
+    by spaces should count as a word, and that any occurrence of a period,
+    exclamation point, or question mark indicates the end of a sentence.
+  - Your program should print as output "Grade X" where X is the grade level
+    computed by the Coleman-Liau formula, rounded to the nearest integer.
+  - If the resulting index number is 16 or higher (equivalent to or greater
+    than a senior undergraduate reading level), your program should output "Grade
+    16+" instead of giving the exact index number. If the index number is less
+    than 1, your program should output "Before Grade 1".
+*/
 package readability
 
 import (
@@ -12,25 +27,7 @@ type ColemanLiau struct {
 }
 
 // Execute()
-//
-// Example:
-//
-//	Text: Harry Potter was a highly unusual boy in many ways.
-//	For one thing, he hated the summer holidays more than any other time of year.
-//	For another, he really wanted to do his homework,
-//	but was forced to do it in secret, in the dead of the night.
-//	And he also happened to be a wizard.
-//	Grade 5
-//
-// This text has 214 letters, 4 sentences, and 56 words.
-// That comes out to about 382.14 letters per 100 words,
-// and 7.14 sentences per 100 words.
-//
-// Example:
-//
-//	Text: Congratulations! Today is your day. You're off to Great Places! You're off and away!
-//	Grade 3
-func Execute(s string) (output string) {
+func Execute(s string) (out string) {
 	str := strings.ToLower(s)
 	cli := ColemanLiau{}
 	lettC, wordC, sentenC := make(chan int), make(chan int), make(chan int)
@@ -47,15 +44,15 @@ func Execute(s string) (output string) {
 	grade := int64(cli.GetGrade(avgS, avgL))
 
 	if grade <= 1 {
-		output = fmt.Sprintf("\nText: %s\nGrade %2s\n", s, "Before 1")
+		out = fmt.Sprintf("\nText: %s\nGrade %2s\n", s, "Before 1")
 	} else if grade > 15 {
-		output = fmt.Sprintf("\nText: %s\nGrade %2s\n", s, "16+")
+		out = fmt.Sprintf("\nText: %s\nGrade %2s\n", s, "16+")
 	} else {
-		output = fmt.Sprintf("\nText: %s\nGrade %2s\n",
+		out = fmt.Sprintf("\nText: %s\nGrade %2s\n",
 			s, strconv.FormatInt(grade, 10))
 	}
-
-	return output
+	fmt.Println(grade)
+	return out
 }
 
 // `CLI` = 0.0588 * `L` - 0.296 * `S` - 15.8
@@ -78,19 +75,12 @@ func (cl ColemanLiau) LenWords(s string) int {
 	return len(word)
 }
 
-func (cl ColemanLiau) LenLetters(s string) int {
-	cl.Text = s       // receiver.Text
-	bytes := []byte{} // cache bytes that are letters.
-
-	for i := 0; i < len(s); i++ {
-		b := byte(cl.Text[i])
-		if b > 64+32 && b < 91+32 {
-			bytes = append(bytes, b)
-		}
-	}
-	return len(bytes)
-}
-
+/*
+   G_2 =
+   "Would you like them here or there?
+   I would not like them here or there.
+   I would not like them anywhere."
+*/
 // if [i]byte == 32, it's a space. cli.SpaceCount(s)
 func (cl ColemanLiau) LenSentence(s string) int {
 	bytes := []byte{}
@@ -108,50 +98,28 @@ func (cl ColemanLiau) LenSentence(s string) int {
 	return len(bytes)
 }
 
+func (cl ColemanLiau) LenLetters(s string) int {
+	cl.Text = s       // receiver.Text
+	bytes := []byte{} // cache bytes that are letters.
+
+	for i := 0; i < len(s); i++ {
+		b := byte(cl.Text[i])
+		if b > 64+32 && b < 91+32 {
+			bytes = append(bytes, b)
+		}
+	}
+	return len(bytes)
+}
+
 func (cl ColemanLiau) TotalLen(s string) int {
 	cl.Text = s // receiver.Text
 	return len(cl.Text)
 }
 
 /*
- GetIndexCLIPer100W()
- (because 0.0588 * 464.29 - 0.296 * 28.57 - 15.8 = 3):
-
- Run()
- Congratulations! Today is your day. You're off to Great Places! You're off and away!
-
-	64 letters per 14 words = avg(464.29 Letters / 100 words). (because 65 / 14 * 100 = 464.29).
-	4 sentences per 14 words = avg(28.57 Sentences / 100 words). (because 4 / 14 * 100 = 28.57).
-*/
-/*
-Package readability
-  - Your program must prompt the user for a string of text using get_string.
-  - Your program should count the number of letters, words, and sentences in
-    the text. You may assume that a letter is any lowercase character from a to z
-    or any uppercase character from A to Z, any sequence of characters separated
-    by spaces should count as a word, and that any occurrence of a period,
-    exclamation point, or question mark indicates the end of a sentence.
-  - Your program should print as output "Grade X" where X is the grade level
-    computed by the Coleman-Liau formula, rounded to the nearest integer.
-  - If the resulting index number is 16 or higher (equivalent to or greater
-    than a senior undergraduate reading level), your program should output "Grade
-    16+" instead of giving the exact index number. If the index number is less
-    than 1, your program should output "Before Grade 1".
-*/
-/*
-$ ./readability
-    Text: Harry Potter was a highly unusual boy in many ways.
-    For one thing, he hated the summer holidays more than any other time of year.
-    For another, he really wanted to do his homework,
-    but was forced to do it in secret, in the dead of the night.
-    And he also happened to be a wizard.
-    Grade 5
-
-    This text has 214 letters, 4 sentences, and 56 words.
-    That comes out to about 382.14 letters per 100 words,
-    and 7.14 sentences per 100 words.
-    Plugged into the Coleman-Liau formula,
-    we get a fifth-grade reading level.
+GetIndexCLIPer100W()
+(because 0.0588 * 464.29 - 0.296 * 28.57 - 15.8 = 3):
+Run()
 */
 func GetGradesInt() []int {
 	var g []int
@@ -165,6 +133,20 @@ func GetGradesInt() []int {
 	return g
 }
 
+// Example:
+//
+//	Text: Harry Potter was a highly unusual boy in many ways. For one thing, he hated the summer holidays more than any other time of year.
+//	For another, he really wanted to do his homework, but was forced to do it in secret, in the dead of the night. And he also happened to be a wizard.
+//	Grade 5
+//
+// This text has 214 letters, 4 sentences, and 56 words. That comes out to about
+// 382.14 letters per 100 words, and 7.14 sentences per 100 words.
+//
+// Example:
+//
+//	Text: Congratulations! Today is your day. You're off to Great Places! You're off and away!
+//	Grade 3
+//
 // getText() returns slice array of text.
 func GetTextStr() []string {
 	var (
@@ -184,22 +166,3 @@ func GetTextStr() []string {
 
 	return t
 }
-
-// type CLI struct {
-// 	GAT testcases.GradeAndText
-// }
-
-// func Execute(s testcases.GradeAndText) int {
-// 	cli := CLI{}
-// 	cli.GAT = s
-
-// 	out := CLI.LettersLen(cli)
-// 	// fmt.Printf("%v\n", cli.GAT.Text)
-// 	return out
-// }
-
-// func (s CLI) LettersLen() int {
-// 	n := len(s.GAT.Text)
-// 	fmt.Printf("n: %v\n", n)
-// 	return 0
-// }
