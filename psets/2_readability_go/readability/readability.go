@@ -51,7 +51,7 @@ func Execute(s string) (out string) {
 		out = fmt.Sprintf("\nText: %s\nGrade %2s\n",
 			s, strconv.FormatInt(grade, 10))
 	}
-	fmt.Println(grade)
+	fmt.Printf("got: %v\n\n", grade)
 	return out
 }
 
@@ -75,27 +75,60 @@ func (cl ColemanLiau) LenWords(s string) int {
 	return len(word)
 }
 
-/*
-   G_2 =
-   "Would you like them here or there?
-   I would not like them here or there.
-   I would not like them anywhere."
-*/
+// LenSentence()
 // if [i]byte == 32, it's a space. cli.SpaceCount(s)
+//
+//		Text: Congratulations! Today is your day. You're off to Great Places! You're off and away!
+//		Grade 3
+//	 w:14, s:1, l:65
+//
+// fmt.Printf("s: %v\n", s) mb := make(map[int]byte) ms := make(map[int]string)
 func (cl ColemanLiau) LenSentence(s string) int {
-	bytes := []byte{}
 	cl.Text = s
-	t := &cl.Text
-	n := len(*t)
+	var (
+		bytes   = []byte{}
+		counter = 0
+		t       = &cl.Text
+		n       = len(*t)
+	)
 
 	for i := 0; i < n; i++ {
-		b := byte((*t)[i])
+		bCurr := byte((*t)[i])
+		bNext := byte((*t)[(i+1)%n])
 
-		if b == byte('.') {
-			bytes = append(bytes, b)
+		if bCurr == byte('.') && bNext == byte(' ') {
+			bytes = append(bytes, bCurr)
+			counter++
+			// debugByteString(bCurr, bNext, i, mb, ms)
+		} else if bCurr == byte('.') && i == n-1 {
+			bytes = append(bytes, bCurr)
+			counter++
+		}
+
+		if bCurr == byte('?') || bCurr == byte('!') {
+			if bNext == byte(' ') {
+				bytes = append(bytes, bCurr)
+				counter++
+				// debugByteString(bCurr, bNext, i, mb, ms)
+			} else if bCurr == byte('!') || bCurr == byte('!') && i == n-1 {
+				bytes = append(bytes, bCurr)
+				counter++
+				// debugByteString(bCurr, bNext, i, mb, ms)
+			}
 		}
 	}
+
+	// fmt.Printf("\nmb: %v", mb)
+	// fmt.Printf("\nms: %v\n", ms)
+	fmt.Printf("bytes: %v\n", bytes)
+	fmt.Printf("counter: %v\n", counter)
 	return len(bytes)
+}
+
+// ms[i], ms[i+1], mb[i], mb[i+1] = string(bCurr), string(bNext), bCurr, byte(bNext)
+func debugByteString(a, b byte, i int, mb map[int](byte), ms map[int]string) {
+	mb[i], mb[i+1] = a, byte(b)
+	ms[i], ms[i+1] = string(a), string(b)
 }
 
 func (cl ColemanLiau) LenLetters(s string) int {
