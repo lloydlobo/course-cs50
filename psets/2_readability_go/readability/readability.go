@@ -20,11 +20,195 @@ import (
 	"math"
 	"strconv"
 	"strings"
+	"sync"
 )
 
+// PERF: erase this struct if not needed.
 type ColemanLiau struct {
 	Text string
 }
+
+// Methods.
+type LenWSL interface {
+	LenWords() int
+	LenSentence() int
+	LenLetters() int
+}
+
+// Methods.
+type AverageLenCalculator interface {
+	FindAverageLetters() float64
+	FindAverageSentences() float64
+}
+
+// Methods.
+type CLICalculator interface {
+	CalculateGrade() float64
+}
+
+type Input struct {
+	text  *string
+	grade *int
+}
+
+type InputCount struct {
+	Words     int
+	Sentences int
+	Letters   int
+}
+
+type InputCountAverage struct {
+	letters   float64
+	sentences float64
+}
+
+func ProcessGrade(s string) string {
+	msg := "\nText: %s\nGrade %2s\n"
+
+	g := GetGrade(s)
+
+	grade := math.Round(*g)
+
+	if grade <= 1 {
+		return fmt.Sprintf(msg, s, "Before 1")
+	} else if grade > 15 {
+		return fmt.Sprintf(msg, s, "16+")
+	}
+
+	return fmt.Sprintf(msg, s, strconv.FormatInt(int64(grade), 10))
+}
+
+// GetGrade()
+func GetGrade(txt string) *float64 {
+	var (
+		wsl   LenWSL
+		avg   AverageLenCalculator
+		grade CLICalculator
+		g     = 0
+		wg    sync.WaitGroup
+	)
+	// If a WaitGroup is reused to wait for several independent sets of events,
+	// new Add calls must happen after all previous Wait calls have returned\.
+	wsl = Input{&txt, &g}
+	wg.Add(3)
+	lenW, lenS, lenL := Length(wsl, &wg)
+
+	avg = InputCount{lenW, lenS, lenL}
+	wg.Add(2)
+	avgS, avgL := AverageLength(avg, &wg)
+
+	grade = InputCountAverage{avgS, avgL}
+	out := grade.CalculateGrade()
+	// PERF: No need of pointers here,
+	// unless storing something.
+	return &out
+}
+
+/*
+// A WaitGroup waits for a collection of goroutines to finish\.
+The main goroutine calls Add to set the number of goroutines to wait for\. Then each of the goroutines
+runs and calls Done when finished\. At the same time, Wait can be used to block until all goroutines have finished\.
+A WaitGroup must not be copied after first use\. In the terminology of the Go memory model, a call to Done
+“synchronizes before” the return of any Wait call that it unblocks\. */
+// Note: if a WaitGroup is explicitly passed into functions, it should be done by pointer.
+func AverageLength(avg AverageLenCalculator, wg *sync.WaitGroup) (float64, float64) {
+	cs, cl := make(chan float64), make(chan float64)
+
+	go func() { defer wg.Done(); cs <- avg.FindAverageSentences() }()
+	go func() { defer wg.Done(); cl <- avg.FindAverageLetters() }()
+
+	s, l := <-cs, <-cl
+	wg.Wait() // Wait till current wg counter = 0.
+	return s, l
+}
+
+func Length(wsl LenWSL, wg *sync.WaitGroup) (int, int, int) {
+	chanW, chanL, chanS := make(chan int), make(chan int), make(chan int)
+
+	go func() { defer wg.Done(); chanW <- wsl.LenWords() }()
+	go func() { defer wg.Done(); chanS <- wsl.LenSentence() }()
+	go func() { defer wg.Done(); chanL <- wsl.LenLetters() }()
+
+	w, s, l := <-chanW, <-chanL, <-chanS
+	wg.Wait() // Wait till current wg counter = 0.
+	return w, s, l
+}
+
+func (c InputCountAverage) CalculateGrade() float64 {
+	return 0.0588*c.letters - 0.296*c.sentences - 15.8
+}
+
+func (c InputCount) FindAverageLetters() float64 {
+	out := 100 * float64(c.Letters) / float64(c.Words)
+	// log.Printf("out: %v\n", out)
+	return out
+}
+
+func (c InputCount) FindAverageSentences() float64 {
+	out := 100 * float64(c.Sentences) / float64(c.Words)
+	// log.Printf("out: %v\n", out)
+	return out
+}
+
+func (in Input) LenLetters() (out int) {
+	t := &in.text
+	count := 0
+
+	for i := 0; i < len(**t); i++ {
+		b := (**t)[i]
+
+		if IsALetter(&b) {
+			count++
+		}
+	}
+	return count
+}
+
+func IsALetter(b *byte) bool { return *b > 64+32 && *b < 91+32 }
+
+func (i Input) LenSentence() int {
+	out := len(strings.Split(*i.text, ". "))
+	// fmt.Printf("out: %v\n", out)
+	return out
+}
+
+func (i Input) LenWords() int {
+	out := len(strings.Split(*i.text, " "))
+	// fmt.Printf("out: %v\n", out)
+	return out
+}
+
+func sum(s []int, c chan int) {
+	sum := 0
+	for _, v := range s {
+		sum += v
+	}
+	c <- sum // send sum to c
+}
+
+func Run() {
+	s := []int{7, 2, 8, -9, 4, 0}
+
+	c := make(chan int)
+	go sum(s[:len(s)/2], c)
+	go sum(s[len(s)/2:], c)
+	x, y := <-c, <-c // receive from c
+
+	fmt.Println(x, y, x+y)
+}
+
+// ////////////////////////////////////////////////////////////////////////
+// ////////////////////////////////////////////////////////////////////////
+// ////////////////////////////////////////////////////////////////////////
+// ////////////////////////////////////////////////////////////////////////
+// ////////////////////////////////////////////////////////////////////////
+// ////////////////////////////////////////////////////////////////////////
+// ////////////////////////////////////////////////////////////////////////
+// ////////////////////////////////////////////////////////////////////////
+// ////////////////////////////////////////////////////////////////////////
+// ////////////////////////////////////////////////////////////////////////
+// ////////////////////////////////////////////////////////////////////////
+// ////////////////////////////////////////////////////////////////////////
 
 // Execute()
 func Execute(s string) (out string) {
