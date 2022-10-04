@@ -19,9 +19,9 @@ const char EXCLAMATION = '!';
 const char QUESTION = '?';
 
 /*
- * Forward declaration for functions.
+ * Forward declarations for functions.
  */
-void prompt(void);
+const char *prompt_text(void);
 const char *get_testcases(); // Without prototype.
 
 /*
@@ -52,7 +52,6 @@ int main(int argc, char *argv[]) {
     int c = INPUT_STR[i];
     char l = tolower(c);
     bool is_between_a_z = l >= 97 && l <= 122;
-
     str[i] = l;
     if (is_between_a_z) {
       letter_count++;
@@ -126,13 +125,29 @@ int main(int argc, char *argv[]) {
   return 0;
 }
 
-void prompt(void) {
-  // printf("Enter Text\n");
-  // fgets(name, sizeof(name), stdin); // read string.
-  // printf("\nHello "); // print prefix.
-  // puts(name);         // Write a string, followed by a newline, to stdout.
+/*
+ * prompt_text function gets input text from the stdin..
+ * And then puts it into a variable.
+ */
+const char *prompt_text(void) {
+  char input_str[MALLOC];
+  printf("Enter Text:\n");
+  fgets(input_str, sizeof(input_str),
+        stdin); // Get a newline-terminated string of finite length from STREAM.
+  puts(input_str); // Write a string, followed by a newline, to stdout.
+
+  int input_len;
+  for (int i = 0; i < strlen(input_str); i++) {
+    if (input_str[i] != '\0') {
+      input_len++;
+    }
+  }
+  const char *return_str[input_len];
+  for (int i = 0; i < input_len; i++) {
+    return_str[i] = &input_str[i];
+  }
+  return *return_str;
 }
-// for (int i = 0; i < strlen(msg_1); i++) { out[i] = msg_1[i]; }
 
 /*
  * get_testcases function returns a string to grade.
