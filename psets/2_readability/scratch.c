@@ -10,7 +10,7 @@
 /*
  * CONSTANTS.
  */
-const int MALLOC = 100;
+const int MALLOC = 240;
 const int MALLOC_OUT = 16;
 const float PER_100_WORDS = 100.0;
 const char SPACE = 32;
@@ -24,13 +24,117 @@ const char QUESTION = '?';
 const char *prompt_text(void);
 const char *get_testcases(); // Without prototype.
 
+int get_count_s(char s[MALLOC]) {
+  printf("void print_s: %s\n", s);
+
+  /* Subtract the last escape char or NUL maybe. */
+
+  int count_input = strlen(s);
+  count_input--;
+
+  return count_input;
+
+} // printf("strlen input: %i\n", count_input);
+
+int count_words(char str[MALLOC], int str_count) {
+  int counter = 1; // Set atleast one word pre loop.
+  for (int i = 0; i < str_count; i++) {
+    if (str[i] == SPACE) {
+      counter++;
+    }
+  }
+  return counter;
+}
+
+// char curr = str[i]; bool is_end = curr == PERIOD || curr == QUESTION ||
+// curr == EXCLAMATION;
+//   if (is_end) {
+//   char prev = str[i - 1];
+//   if (prev == QUESTION || prev == EXCLAMATION) { counter++; }
+//    else if (curr == PERIOD) { counter++; }
+// }
+int count_sentences(char str[MALLOC], int str_count) {
+  int counter = 0; // TODO: Set atleast one sentence pre loop.
+  for (int i = 0; i < str_count; i++) {
+    char c = str[i];
+    bool is_line_end = i == str_count - 1 && counter == 0;
+    bool is_curr_sentence_end =
+        c == PERIOD || c == QUESTION || c == EXCLAMATION;
+    if (c == EXCLAMATION || c == QUESTION || c == PERIOD) {
+      counter++;
+      // if (is_line_end) {
+      //   counter++; // Fallback for 1 sentence text.
+      // }
+    }
+  }
+  return counter;
+}
+
+int count_letters(char str[MALLOC], int str_count) {
+  int counter = 0; // Set atleast one word pre loop.
+  for (int i = 0; i < str_count; i++) {
+    char c = tolower(str[i]);
+    bool is_lower_a_to_z = c >= 97 && c <= 122;
+    if (is_lower_a_to_z) {
+      counter++;
+    }
+  }
+  return counter;
+}
+
+float average_sentences(float s_len, float w_len) {
+  return ((float)s_len / w_len) * PER_100_WORDS;
+}
+
+float average_letters(float l_len, float w_len) {
+  return ((float)l_len / w_len) * PER_100_WORDS;
+}
+
+/*
+ * coleman_liau_index calculates grade of a text.
+ *
+ * grade := 0.0588*l - 0.296*s - 15.8
+ */
+float coleman_liau_index(float letter_avg, float sentence_avg) {
+  return roundf(0.0588 * letter_avg - 0.296 * sentence_avg - 15.8);
+}
+
 /*
  * Entry point function main().
  */
 int main(int argc, char *argv[]) {
   const char *INPUT_STR = get_testcases();
   const char *string_user[MALLOC]; // const char *str[malloc];
-  int malloc = strlen(INPUT_STR);  // allocate memory by SRL strlen size.
+
+  /* prompt user for text. */
+
+  char s[MALLOC]; // NOTE: Prompt Text from user.
+  printf("Enter text to grade with Coleman-Liau formulat:\n");
+  fgets(s, sizeof(s), stdin);
+  printf("\nInput: %s\n", s);
+  puts(s); // Write a string, followed by a newline, to stdout.
+
+  int s_count = get_count_s(s);
+
+  /* assign string, word, sentences, letters count. */
+
+  int w_len = count_words(s, s_count);
+  int s_len = count_sentences(s, s_count);
+  int l_len = count_letters(s, s_count);
+  printf("%i, %i, %i\n", w_len, s_len, l_len);
+
+  /* calculate average letter & sentence count / 100 words. */
+
+  float s_avg = average_sentences(s_len, w_len);
+  float l_avg = average_letters(l_len, w_len);
+  printf("%.2f, %.2f\n", l_avg, s_avg);
+
+  /* Calculate Coleman-Liau Index Grade. */
+
+  float cli_grade = coleman_liau_index(l_avg, s_avg);
+  printf("cli_grade: %f\n", cli_grade);
+
+  /* assign string count. */
 
   int string_count = 0;
   int letter_count = 0;
