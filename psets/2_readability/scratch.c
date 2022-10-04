@@ -24,17 +24,8 @@ const char QUESTION = '?';
 const char *prompt_text(void);
 const char *get_testcases(); // Without prototype.
 
-int get_count_s(char s[MALLOC]) {
-  printf("void print_s: %s\n", s);
-
-  /* Subtract the last escape char or NUL maybe. */
-
-  int count_input = strlen(s);
-  count_input--;
-
-  return count_input;
-
-} // printf("strlen input: %i\n", count_input);
+/* Subtract the last escape char or NUL maybe. */
+int get_count_s(char s[MALLOC]) { return strlen(s) - 1; }
 
 int count_words(char str[MALLOC], int str_count) {
   int counter = 1; // Set atleast one word pre loop.
@@ -46,13 +37,6 @@ int count_words(char str[MALLOC], int str_count) {
   return counter;
 }
 
-// char curr = str[i]; bool is_end = curr == PERIOD || curr == QUESTION ||
-// curr == EXCLAMATION;
-//   if (is_end) {
-//   char prev = str[i - 1];
-//   if (prev == QUESTION || prev == EXCLAMATION) { counter++; }
-//    else if (curr == PERIOD) { counter++; }
-// }
 int count_sentences(char str[MALLOC], int str_count) {
   int counter = 0; // TODO: Set atleast one sentence pre loop.
   for (int i = 0; i < str_count; i++) {
@@ -61,10 +45,8 @@ int count_sentences(char str[MALLOC], int str_count) {
     bool is_curr_sentence_end =
         c == PERIOD || c == QUESTION || c == EXCLAMATION;
     if (c == EXCLAMATION || c == QUESTION || c == PERIOD) {
-      counter++;
-      // if (is_line_end) {
-      //   counter++; // Fallback for 1 sentence text.
-      // }
+      counter++; // if (is_line_end) { counter++; // Fallback for 1 sentence
+                 // text. }
     }
   }
   return counter;
