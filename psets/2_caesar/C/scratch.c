@@ -17,10 +17,9 @@ void report_successful_input(char *argv[]);
 int main(int argc, char *argv[]) {
   /* Handle if no input is added. */
   if (argc < 2) {
-    report_arv_len_not_enough();
-    return EXIT_FAILURE; // exit.
+    report_arv_len_not_enough(); // TODO: Cover case fo argc == 1. no value.
+    return EXIT_FAILURE;         // exit.
   }
-
   report_successful_input(argv); // continue.
 
   /* argument count & vector. */
@@ -49,25 +48,16 @@ int main(int argc, char *argv[]) {
   char value_temp[len_argc_value];
   for (int i = 0; i < len_argc_value; i++) {
     char *c = &argv[2][i];
-    bool is_a_to_z = *c >= 97 && *c <= 122;
+    bool is_a_to_z =
+        *c >= 97 && *c <= 122; // PERF: Add support for english chars. ?!,:
     if (is_a_to_z) {
       value_temp[i] = *c;
-    } else { // PERF: Doing 2 things. Collect & error handiling.
+    } else { // PERF: Doing 2 things. Collect & error handiling. Refactor.
       report_argv_2_not_a_string();
       return EXIT_FAILURE;
     }
   }
   const char *value = value_temp;
-
-  char in_str_key[len_argc_key];
-  for (int i = 0; i < len_argc_key; i++) {
-    in_str_key[i] = argv[1][i];
-  }
-
-  /* Prompt till the right input is received. */
-
-  // TODO: maybe loop it?
-  // while (argc == 2) ;
 
   /* Print from 13 to infinity. Cycles at 26 a-z. */
 
@@ -105,7 +95,7 @@ void report_argv_1_not_int(void) {
 }
 
 void report_argv_2_not_a_string() {
-  printf("err: Entered passwords is not a valid text.\n\n"
+  printf("err: Entered password is not a valid text.\n\n"
          "Usage:\n"
          "     ./caesar <key> <password>\n"
          "     ./caesar 13 Hello\n");
