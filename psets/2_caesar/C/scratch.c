@@ -11,8 +11,8 @@ void print_line(void);
 void report_arv_len_not_enough();
 void report_argv_1_not_int();
 void report_argv_2_not_a_string();
-void report_successful_input(char *argv[]);
-
+// void report_successful_input(char *argv[]);
+void report_successful_input(char *argv[], char *cyp[]);
 /* Design and implement a program, caesar,
    that encrypts messages using Caesar’s cipher. */
 int main(int argc, char *argv[]) {
@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
     report_arv_len_not_enough(); // TODO: Cover case fo argc == 1. no value.
     return EXIT_FAILURE;         // exit.
   }
-  report_successful_input(argv); // continue.
+  // report_successful_input(argv); // continue.
 
   /* argument count & vector. */
 
@@ -63,9 +63,41 @@ int main(int argc, char *argv[]) {
 
   /* Convert key to 1-26 Caesar crypt. Cycles at 26 a-z. */
 
-  int caesar_cypher = (key + 1) % 26;
+  // https://cs50.harvard.edu/x/2022/psets/2/caesar/
+  /* More formally, Caesar’s algorithm (i.e., cipher) encrypts messages by
+     “rotating” each letter by positions. More formally, if is some plaintext
+     (i.e., an unencrypted message),
+     pi is the ith character in p, k and is a secret key (i.e., a non-negative
+     integer), then each letter, ci, in the ciphertext, c, is computed as:
+
+     ci = (pi + k) % 26 */
+
+  // https://scholarsoul.com/convert-int-to-char-in-c/
+  /* Characters use an encoding (typically ASCII) to map numbers to a
+     particular character. The codes for the characters '0' to '9' are
+     consecutive, so for values less than 10 you add the value to the
+     character constant '0'. For values 10 or more, you add the value minus
+     10 to the character constant 'A': */
+  char cypher[len_argc_value];
+  for (int i = 0; i < len_argc_value; i++) {
+    // char v_c = value[i];
+    // char *v = &v_c;  // int v_atoi = atoi(v); // int key = atoi(key_temp);
+    // int v_atoi = *v; // int key = atoi(key_temp);
+    int v_atoi = value[i]; // int key = atoi(key_temp);
+    int cypher_value = (v_atoi + key) % 26;
+    char c; // char c = cypher_value + '0'; //
+    if (cypher_value >= 10) {
+      c = 'A' + cypher_value - 10;
+    } else {
+      c = '0' + cypher_value;
+    }
+    cypher[i] = c;
+  }
+  const char *cy = cypher;
+  char *cyp = cypher;
 
   /* Print results. */
+  report_successful_input(argv, &cyp); // continue.
 
   printf("argc:              %i\n", argc);         // 2.
   printf("argv[1]:           %s\n", argv[1]);      // 13.
@@ -75,6 +107,8 @@ int main(int argc, char *argv[]) {
   printf("key:               %i\n", key);          // 2.
   printf("value_temp:        %s\n", value_temp);   // 2.
   printf("value:             %s\n", value);        // 2.
+  printf("cypher:            %s\n", cypher);
+  printf("cy:                %s\n", cy);
   // printf("input:             %s\n", input);    // 13.
   // printf("Secret hash key:   %2s\n", input);   // 13.
 
@@ -105,10 +139,11 @@ void report_argv_2_not_a_string() {
          "     ./caesar 13 Hello\n");
 }
 
-void report_successful_input(char *argv[]) {
+void report_successful_input(char *argv[], char *cyp[]) {
   print_line();
   printf("| Secret key     :    %2s\n", argv[1]);
   printf("| Password       :    %2s\n", argv[2]);
+  printf("| Cypher         :    %2s\n", *cyp);
   print_line();
 }
 
