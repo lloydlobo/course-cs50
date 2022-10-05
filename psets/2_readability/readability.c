@@ -118,11 +118,8 @@ float average_letters(float l_len, float w_len) {
   return ((float)l_len / w_len) * PER_100_WORDS;
 }
 
-/*
- * coleman_liau_index calculates grade of a text.
- *
- * grade := 0.0588*l - 0.296*s - 15.8
- */
+/* coleman_liau_index calculates grade of a text.
+   grade := 0.0588*l - 0.296*s - 15.8 */
 float coleman_liau_index(float letter_avg, float sentence_avg) {
   return roundf(0.0588 * letter_avg - 0.296 * sentence_avg - 15.8);
 }
