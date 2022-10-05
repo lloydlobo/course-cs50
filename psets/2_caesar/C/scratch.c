@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,8 +13,8 @@ void report_argv_1_not_int();
 void report_argv_2_not_a_string();
 void report_successful_input(char *argv[]);
 
-/* int main()
-   Caesar */
+/* Design and implement a program, caesar,
+   that encrypts messages using Caesar’s cipher. */
 int main(int argc, char *argv[]) {
   /* Handle if no input is added. */
   if (argc < 2) {
@@ -35,8 +36,7 @@ int main(int argc, char *argv[]) {
   for (int i = 0; i < len_argc_key; i++) {
     char *c = &argv[1][i];
     key_temp[i] = *c;
-  }
-  // 1. sscanf() 2. atoi() 3. Typecasting. string => int.
+  } // 1. sscanf() 2. atoi() 3. Typecasting. string => int.
   int key = atoi(key_temp); // int *key = (int *)key_temp; // 13 => 13105.
   if (key < 1) {            // argv[1] is a +ve integer.
     report_argv_1_not_int();
@@ -48,9 +48,11 @@ int main(int argc, char *argv[]) {
   char value_temp[len_argc_value];
   for (int i = 0; i < len_argc_value; i++) {
     char *c = &argv[2][i];
-    bool is_a_to_z =
-        *c >= 97 && *c <= 122; // PERF: Add support for english chars. ?!,:
-    if (is_a_to_z) {
+    bool is_AZ_az =
+        *c >= 64 && *c <= 122; // Unicode values: A-Z == 64-96 | a-z == 97-122.
+                               // PERF: Add support for english chars. ?!,:
+    char l = tolower(*c);      // TODO: See when to use lowercase?
+    if (is_AZ_az) {
       value_temp[i] = *c;
     } else { // PERF: Doing 2 things. Collect & error handiling. Refactor.
       report_argv_2_not_a_string();
@@ -59,7 +61,9 @@ int main(int argc, char *argv[]) {
   }
   const char *value = value_temp;
 
-  /* Print from 13 to infinity. Cycles at 26 a-z. */
+  /* Convert key to 1-26 Caesar crypt. Cycles at 26 a-z. */
+
+  int caesar_cypher = (key + 1) % 26;
 
   /* Print results. */
 
