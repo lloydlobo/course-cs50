@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #define BOOL bool;
 
 /* Constants. */
@@ -35,9 +36,27 @@ float coleman_liau_index(float letter_avg, float sentence_avg);
    Compile with:
    $ gcc -o readability readability.c -lm -lpthread */
 int main(int argc, char *argv[]) {
+  char s[MALLOC]; // NOTE: Prompt Text from user.
+  // buffered vs non-buffered io.
+  // https://stackoverflow.com/questions/26697627/how-to-pipe-data-to-a-program-which-calls-scanf-and-read-in-linux
+  int n;
+  char str[MALLOC];
+  setbuf(stdin, NULL);
+  scanf("%d", &n);
+  printf("n: %d\n", n);
+  int count = read(STDIN_FILENO, str, MALLOC);
+  printf("str: %s\n", str);
+  printf("read %d bytes\n", count);
+
+  // n: 32768
+  // str: ello world
+  // read 11 bytes
+  // Enter text to grade with Coleman-Liau formulae:
+  // h
+  // cli_grade: -16.000000
+
   const char *string_user[MALLOC]; // const char *str[malloc];
   /* prompt user for text. */
-  char s[MALLOC]; // NOTE: Prompt Text from user.
   printf("Enter text to grade with Coleman-Liau formulae:\n");
   fgets(s, sizeof(s), stdin); // printf("\nInput: %s\n", s);
   puts(s); // Write a string, followed by a newline, to stdout.
