@@ -28,8 +28,10 @@ int main(int argc, char *argv[]) {
   /* TODO: Ensure no line breaks in cli argument */
 
   /* TODO: Tyoe check arg[1] to be a digit or int. */
-  if (only_digits(argv) == 0)
+  if (only_digits(argv) == 0) {
+    report_argv_1_not_int();
     return EXIT_FAILURE;
+  }
 
   /* argument count & vector. */
 
@@ -133,20 +135,27 @@ int main(int argc, char *argv[]) {
   return 0;
 }
 
+/* only_digits function takes a string as an argument
+   and returns true if that string contains
+   only digits, 0 through 9, else it returns false. */
+// char str[n];
+// bool is_a_number = c > 47 && c < 58;
+// str[i] = c;
+// if (is_a_number == 0) {
+//   return false;
+// } else if (str[i] > 47 && str[i] < 58)
+//   continue;
 bool only_digits(char *s[]) {
-  int n = strlen(s[1]); // printf("only_digits: %s; %i\n", s[1], n);
-  char str[n];
-  for (int i = 0; i < n; i++) {
+  for (int i = 0, n = strlen(s[1]); i < n; i++) {
     char c = s[1][i];
-    bool is_a_number = c > 47 && c < 58;
-    str[i] = c; // printf("str: %s\n", str);
-    if (is_a_number == 0) {
+    if (isdigit(c) == 0)
       return false;
-    } else if (str[i] > 47 && str[i] < 58)
+    else
       continue;
   }
   return true;
 }
+
 // https://cs50.harvard.edu/x/2022/psets/2/caesar/
 /* More formally, Caesar’s algorithm (i.e., cipher) encrypts messages by
    “rotating” each letter by positions. More formally, if is some plaintext
@@ -199,12 +208,3 @@ void report_successful_input(char *argv[], char *cyp[]) {
   printf("| Cypher         :    %2s\n", *cyp);
   print_line();
 }
-
-/* int argc, char *argv[]
-printf("%i %s\n", argc, argv[0]); // ./scratch
-printf("%i %s\n", argc, argv[1]); // 1
-printf("%i %s\n", argc, argv[2]); // null
-
-1 ./scratch
-1 (null)
-1 XDG_RUNTIME_DIR=/run/user/1000 */
