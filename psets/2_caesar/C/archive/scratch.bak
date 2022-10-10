@@ -154,7 +154,6 @@ int main(int argc, char *argv[]) {
     } else {
       c = '0' + cypher_value;
     }
-
     /* TODO: rotate if it's a letter */
     sprintf(no_buf_overrun, "%c",
             char_ascii_code); // Write forward output to S.
