@@ -48,19 +48,28 @@ int cli_argv_key_to_int(char *arg1[]) {
   return key;
 }
 
+const int ENGLISH_CHARS = 26;
+const int WRAP_UPPER_A = 64;
+const int WRAP_LOWER_A = 97;
+/* rotate function rotates a char by key value.
+
+   It adds key value to only alphabets between 64 & 122.
+   Subtracting the ascii value of A & a from each char.
+   Thus, A = 0, B = 1..
+   a = 0, b = 1.. in each conditionals.*/
 char rotate(char c, int key) {
   int ci = c;
   int wrap_diff, cipher, ci_from_0;
 
   if (is_alphabet(c)) {
     if (is_uppercase(ci)) {
-      wrap_diff = 64;
+      wrap_diff = WRAP_UPPER_A; // 64;
       ci_from_0 = ci - wrap_diff;
-      cipher = (ci_from_0 + key) % 26;
+      cipher = (ci_from_0 + key) % ENGLISH_CHARS; // 26.
     } else if (is_lowercase(ci)) {
-      wrap_diff = 97;
+      wrap_diff = WRAP_LOWER_A; // 97;
       ci_from_0 = ci - wrap_diff;
-      cipher = (ci_from_0 + key) % 26;
+      cipher = (ci_from_0 + key) % ENGLISH_CHARS; // 26.
     }
     return cipher + wrap_diff;
   } else if (is_ascii(c)) {
@@ -75,50 +84,3 @@ bool is_uppercase(int c) { return c < 65 + 32; }
 bool is_lowercase(int c) { return c > 64; }
 
 bool is_ascii(char c) { return c <= 64 && c >= 122; }
-
-// rotate a plaintext char to get cypher.
-// char rotate(char c, int key) {
-//   int cint = c;
-//   char cypher;
-//   if (cint > 65 || cint < 122) {
-//     int cache_ascii_value = cint;                        // 'A' is 65.
-//     int zero_index_alphabets = cint - cache_ascii_value; // 'A' is 0.
-//     int az_AZ = cint - 64 - 1;
-//     int cypher = (az_AZ + key) % 26; // can be 25 too?
-//     char cypher_wrap = (cypher) % 26 + 64 + 1;
-//     char cypher_wrap_ascii_AZ = (cypher + 64 + 1) % 97;
-//     char cypher_wrap_ascii_az = (cypher) % 122 + 64 + 1;
-//     cypher = cypher_wrap_ascii_AZ;
-//   }
-//   return cypher;
-// }
-
-char rotate_bak(char c, int key) {
-  int cint = c; // same as char --> type 'casting'.
-  char cypher;
-  // A = 0; Z = 25. (26 characters english lang)
-  if (cint > 65 || cint < 122) {
-    // printf("cint: %i\n", cint);
-    // Compensate for A-Z & a-z - 32
-    int az_AZ = cint - 64 - 1; // PERF: Refactor hardcoded values to constants.
-    int cypher = (az_AZ + key) % 26; // can be 25 too?
-    char cypher_wrap = (cypher) % 26 + 64 + 1;
-    // if 0 - 25 ===> then 64 -> 97.
-    char cypher_wrap_ascii_AZ = (cypher + 64 + 1) % 97;
-    // (cypher) % 97 + 64 + 1; // if 0 - 25 ===> then 64 -> 97.
-    char cypher_wrap_ascii_az = (cypher) % 122 + 64 + 1;
-    cypher = cypher_wrap_ascii_AZ;
-    // if (cint is uppercase) { Subtract the ASCII value of 'A' from any
-    // uppercase letters.
-    // TODO: Use % for "wrapping around" from a value like 25 to 0. */
-    int cache_ascii_value = cint;                        // 'A' is 65.
-    int zero_index_alphabets = cint - cache_ascii_value; // 'A' is 0.
-    // Treat 'A' as 0, 'B' as 1, .... Add it back after performing the
-    // arithemetic. Sub ascii value and the use cli formula Add back cached
-    // value.
-    // }
-    // printf("rotate(): c: %c\n", cint);
-    printf("%c", cache_ascii_value);
-  }
-  return cypher;
-}
