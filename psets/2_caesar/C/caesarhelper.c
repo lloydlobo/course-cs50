@@ -33,21 +33,6 @@ void report_argv_2_not_a_string(void) {
          "     ./caesar 13 Hello\n");
 }
 
-void report_successful_input(char *argv[], char *cyp[]) {
-  print_line();
-  printf("| Secret key     :    %2s\n", argv[1]);
-  printf("| Password       :    %2s\n", argv[2]);
-  printf("| Cypher         :    %2s\n", *cyp);
-  print_line();
-}
-
-void print_results(int key, const char *plaintext, const char *cypher) {
-  print_line();
-  printf("| Secret key     :    %i\n", key);
-  printf("| Password       :    %s\n", plaintext);
-  printf("| Cypher         :    %s\n", cypher);
-  print_line();
-}
 // https://stackoverflow.com/questions/5904530/how-do-header-and-source-files-in-c-work
 /* Converting C source code files to an executable program is normally done in
 two steps: compiling and linking.

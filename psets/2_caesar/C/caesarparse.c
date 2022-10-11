@@ -11,8 +11,8 @@ void err_argv_1_key_not_int(void);
 
 /* Forward declaration for functions with prototypes.*/
 
-bool check_alphabet(char c);
-bool check_ascii(char c);
+bool is_alphabet(char c);
+bool is_ascii(char c);
 bool is_uppercase(int c);
 bool is_lowercase(int c);
 
@@ -50,47 +50,31 @@ int cli_argv_key_to_int(char *arg1[]) {
 
 char rotate(char c, int key) {
   int ci = c;
-  bool is_alphabet = check_alphabet(c);
-  bool is_ascii = check_ascii(c);
-  int wrap_diff;
-  int cypher;
-  int ci_from_0;
+  int wrap_diff, cipher, ci_from_0;
 
-  if (is_alphabet) {
+  if (is_alphabet(c)) {
     if (is_uppercase(ci)) {
       wrap_diff = 64;
       ci_from_0 = ci - wrap_diff;
-      int rotate_ci = ci_from_0 + key;
-
-      cypher = (rotate_ci) % 26;
-      printf("upper: %c\n", cypher + wrap_diff);
+      cipher = (ci_from_0 + key) % 26;
     } else if (is_lowercase(ci)) {
       wrap_diff = 97;
       ci_from_0 = ci - wrap_diff;
-      int rotate_ci = ci_from_0 + key;
-
-      cypher = (rotate_ci) % 26;
-      printf("lower: %c\n", cypher + wrap_diff);
+      cipher = (ci_from_0 + key) % 26;
     }
-    return cypher + wrap_diff;
-  } else if (is_ascii) {
+    return cipher + wrap_diff;
+  } else if (is_ascii(c)) {
     return c;
   } else {
     return c;
   }
 }
 
+bool is_alphabet(char c) { return c > 64 && c < 122; }
 bool is_uppercase(int c) { return c < 65 + 32; }
 bool is_lowercase(int c) { return c > 64; }
 
-bool check_alphabet(char c) {
-  printf("c:              %c\n", c);
-  int c_code = c;
-  printf("check_alphabet: %i\n", c_code);
-  return true;
-}
-
-bool check_ascii(char c) { return true; }
+bool is_ascii(char c) { return c <= 64 && c >= 122; }
 
 // rotate a plaintext char to get cypher.
 // char rotate(char c, int key) {

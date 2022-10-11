@@ -5,35 +5,9 @@
 #include <string.h>
 #define BOOL bool;
 
-// • Recall that you can explicitly “cast” a char to an int with (char), and an
-// int to a char with (int). Or you can do so implicitly by
-//   simply treating one as the other.
-// • Odds are you’ll want to subtract the ASCII value of 'A' from any uppercase
-// letters, so as to treat 'A' as 0, 'B' as 1, and so forth,
-//   while performing arithmetic. And then add it back when done with the same.
-// • Odds are you’ll want to subtract the ASCII value of 'a' from any lowercase
-// letters, so as to treat 'a' as 0, 'b' as 1, and so forth,
-//   while performing arithmetic. And then add it back when done with the same.
-// • You might find some other functions declared in ctype.h to be helpful, per
-// manual.cs50.io. • Odds are you’ll find % helpful when “wrapping around”
-// arithmetically from a value like 25 to 0.
-
-// Then modify main in such a way that it prints "ciphertext: " and then
-// iterates over every char in the user’s plaintext, calling rotate on each, and
-// printing the return value thereof.
-
-// Hints
-
-//   • Recall that printf can print a char using %c.
-//   • If you’re not seeing any output at all when you call printf, odds are
-//   it’s because you’re printing characters outside of the valid ASCII
-//     range from 0 to 127. Try printing characters temporarily as numbers
-//     (using %i instead of %c) to see what values you’re printing! */
-
 /*  source files $ gcc -g *.c -lm $ gcc -o caesar caesar.c caesarhelper.c */
 /*  source file: caesarhelper.c */
 
-void print_results(int key, const char *plaintext, const char *cypher);
 void err_argv_len_not_enough(void);
 void print_line(void);
 void err_argv_len_more_than_expected(void);
@@ -48,38 +22,46 @@ char rotate(char c, int key);
 /* Forward declaration for functions with prototypes.*/
 
 int handle_input_errors(int argc, char *argv[]);
+void print_result(int key, const char *plaintext, char *cipher);
+
+const int index_argv_key_1 = 1;
+const int len_escape_char_n_1 = 1;
+const int malloc_prompt = 100;
+const int malloc_cipher = 0;
 
 /*
  * main
  */
 int main(int argc, char *argv[]) {
   handle_input_errors(argc, argv);
+  char cipher[malloc_cipher], string_prompt[malloc_prompt];
 
-  char string_prompt[100];
+  /* Prompt plaintext from user, and get
+     a newline terminated string of fixed length */
   printf("\nplaintext: ");
   fgets(string_prompt, sizeof(string_prompt), stdin);
-  puts(string_prompt);
 
-  const char *plaintext = string_prompt;     // with line break.
-  int len_plaintext = strlen(plaintext) - 1; // subtract 1 for '\n' char.
+  // Convert string argv[1] key to integer.
+  int key = cli_argv_key_to_int(&argv[index_argv_key_1]);
 
-  // * Using the Key.
-  int key = cli_argv_key_to_int(&argv[1]);
+  const char *plaintext = string_prompt;
+  // Subtract 1 for '\n' char (newline).
+  int len = strlen(string_prompt) - len_escape_char_n_1;
 
-  char char_rotated[len_plaintext];
-  for (int i = 0; i < len_plaintext; i++) {
-    char_rotated[i] = rotate(plaintext[i], key);
+  /* For each char, rotate char by adding
+     the key for every 26 characters. */
+  for (int i = 0; i < len; i++) {
+    cipher[i] = rotate(plaintext[i], key);
   }
-  const char *cypher = char_rotated;
 
-  // * Print final results.
-  print_results(key, plaintext, cypher);
+  print_result(key, plaintext, cipher);
   return EXIT_SUCCESS; // 0.
 }
 
-/*
- * handle_input_errors checks for stdin user inputs.
- */
+// HACK: Does this exit truly?
+/*  handle_input_errors checks for stdin user inputs.
+    It exits with exit code 1 if not enough arguments
+    are provided */
 int handle_input_errors(int argc, char *argv[]) {
   // Handle if no input is added.
   if (argc < 2) {
@@ -96,4 +78,13 @@ int handle_input_errors(int argc, char *argv[]) {
   } else {
     return 1; // True.
   }
+}
+/* Print final result.
+ */
+void print_result(int key, const char *plaintext, char *cipher) {
+  print_line();
+  printf("| Secret key     :    %i\n", key);
+  printf("| Password       :    %s\n", plaintext);
+  printf("| Cypher         :    %s\n", cipher);
+  print_line();
 }
