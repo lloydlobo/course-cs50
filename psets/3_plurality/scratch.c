@@ -1,11 +1,12 @@
+// wget https://cdn.cs50.net/2021/fall/psets/3/plurality.zip
+// unzip plurality.zip
+//
+// https://cs50.harvard.edu/x/2022/psets/3/
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 // #include <cs50.h>
 #define BOOL bool
-
-// https://cs50.harvard.edu/x/2022/psets/3/
-
 // Max number of candidates
 #define MAX 9
 
@@ -17,10 +18,8 @@ typedef struct {
 
 // Array of candidates
 candidate candidates[MAX];
-
 // Number of candidates
 int candidate_count;
-
 // Function prototypes
 bool vote(char *name);
 void print_winner(void);
