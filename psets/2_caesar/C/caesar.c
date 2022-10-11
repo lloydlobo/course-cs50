@@ -32,7 +32,6 @@ const int malloc_prompt = 100;
  * main
  */
 int main(int argc, char *argv[]) {
-  //   handle_input_errors checks for stdin user inputs.
   if (argc < 2) {
     err_argv_len_not_enough();
     return EXIT_FAILURE; // exit 1.
@@ -46,8 +45,8 @@ int main(int argc, char *argv[]) {
   }
   // Convert string argv[1] key to integer.
   int key = cli_argv_key_to_int(&argv[index_argv_key_1]);
-  /* Prompt plaintext from user, and get
-     a newline terminated string of fixed length */
+  // Prompt plaintext from user, and get a newline-
+  // terminated string of fixed length.
   char cipher[malloc_cipher], string_prompt[malloc_prompt];
   printf("\nplaintext: ");
   fgets(string_prompt, sizeof(string_prompt), stdin);
@@ -58,8 +57,8 @@ int main(int argc, char *argv[]) {
     return EXIT_FAILURE; // exit 1.
   }
   const char *plaintext = string_prompt;
-  /* For each char, rotate char by adding
-     the key for every 26 characters. */
+  // For each char, rotate char by adding,
+  // the key for every 26 characters.
   for (int i = 0; i < len; i++) {
     cipher[i] = rotate(plaintext[i], key);
   }

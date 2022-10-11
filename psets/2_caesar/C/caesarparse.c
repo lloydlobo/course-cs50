@@ -33,13 +33,13 @@ bool only_digits(char *s[]) {
 /* char to int
    1. sscanf() 2. atoi() 3. Typecasting. string => int. */
 int cli_argv_key_to_int(char *arg1[]) {
-  int len_argv_key = strlen(arg1[0]);
-  char key_str[len_argv_key];
-  for (int i = 0; i < len_argv_key; i++) {
+  int len = strlen(arg1[0]);
+  char key_str[len];
+  for (int i = 0; i < len; i++) {
     char *c = &arg1[0][i];
     key_str[i] = *c;
   }
-  /* Convert key from char[] to int. */
+  // Convert key from char[] to int.
   int key = atoi(key_str);
   if (key < 1) {
     err_argv_1_key_not_int();
@@ -48,17 +48,22 @@ int cli_argv_key_to_int(char *arg1[]) {
   return key;
 }
 
+/* Constants */
+
 const int ENGLISH_CHARS = 26;
 const int WRAP_UPPER_A = 64;
 const int WRAP_LOWER_A = 97;
+
 /* rotate function rotates a char by key value.
 
    It adds key value to only alphabets between 64 & 122.
    Subtracting the ascii value of A & a from each char.
-   Thus, A = 0, B = 1..
-   a = 0, b = 1.. in each conditionals.*/
+   Thus, A = 0, B = 1.. a = 0, b = 1.. in each conditionals.
+
+   For each char, rotate char by adding,
+   the key for every 26 characters. */
 char rotate(char c, int key) {
-  int ci = c;
+  int ci = c; // Typecasting char to int.
   int wrap_diff, cipher, ci_from_0;
 
   if (is_alphabet(c)) {
@@ -71,16 +76,16 @@ char rotate(char c, int key) {
       ci_from_0 = ci - wrap_diff;
       cipher = (ci_from_0 + key) % ENGLISH_CHARS; // 26.
     }
-    return cipher + wrap_diff;
+    return cipher + wrap_diff; // Add wrapped key difference to cipher after
+                               // processing for upper and lower cases.
   } else if (is_ascii(c)) {
-    return c;
+    return c; // Return unchanged.
   } else {
-    return c;
+    return c; // Return unchanged.
   }
 }
 
 bool is_alphabet(char c) { return c > 64 && c < 122; }
 bool is_uppercase(int c) { return c < 65 + 32; }
 bool is_lowercase(int c) { return c > 64; }
-
 bool is_ascii(char c) { return c <= 64 && c >= 122; }
