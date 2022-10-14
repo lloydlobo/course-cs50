@@ -58,58 +58,79 @@ int main(int argc, char *argv[]) {
     int voter_count = atoi(prompt_voter_count);
     // Loop over all voters
     char *voters;
+    // TODO: increment vote count.
+    int all_valid_votes;
     printf("voter_count: %i\n", voter_count);
     for (int i = 0; i < voter_count; i++) { // string name = get_string("Vote: ");
         char usrvote[10];
         printf("Votes: ");
         fgets(usrvote, sizeof(usrvote), stdin);
-        // Check for invalid vote if (!vote(&name)) { printf("Invalid vote.\n"); }
-        // TODO: Add vote here somehow?
-        // NOTE: !!! Maybe because it's not a pointer we can't compare usrvote in
-        // scoped function?
-        if (!vote(usrvote)) {
+        if (!vote(usrvote)) { // is vote valid?
             printf("Invalid vote.\n");
         } else {
-            continue;
+            all_valid_votes++;
         }
     }
-    print_winner(); // Display winner of election
+    // Display winner of election
+    print_winner();
 }
 
 // Update vote totals given a new vote
-// bool vote(string name) { // TODO return false; }
-bool vote(char *name) { // printf("bool vote(...) = %s\n", name);
-    int n = candidate_count;
-    char *ctrim;
-    const char *t_c;
-    const char *t_n;
+bool vote(char *name) {
+    bool isFound = true;
     int len_name = strlen(name) - 1;
     char copy[len_name];
+    const char *cache_vote;
     for (int i = 0; i < len_name; i++) {
-        char ch = name[i];
-        copy[i] = ch;
-        t_n = copy; // FIX: Not iterating over each candi name?
+        char c = name[i];
+        copy[i] = c; // HACK: Two instance of copied values.
+        cache_vote = copy;
     }
-    bool result = true;
-    for (int i = 0; i < n; i++) {
-        t_c = (candidates)[i].name;
-        const char *copy_name = t_n;
-        // Compare strings.
-        if (strcmp(t_c, copy_name) == 0) { // TODO: increment vote count.
-            result = true;
-            printf("Found: %s\n", t_n);
+    for (int i = 0; i < candidate_count; i++) {
+        const char *vote_name = cache_vote;
+        const char *candidate_name = (candidates)[i].name;
+        // Compare strings of same type.
+        bool isAMatchVote = strcmp(candidate_name, vote_name) == 0;
+        if (isAMatchVote) {
+            candidates[i].votes++;
+            isFound = true;
             break;
         } else {
-            result = false;
+            isFound = false;
         }
-        printf(" loop index: %i\n", i);
     }
-    return result;
+    return isFound;
 }
 
 // Print the winner (or winners) of the election
 void print_winner(void) {
     // TODO:
+    int *ballot[candidate_count];
+    int isGreater;
+    int idx;
+    for (int i = 0; i < candidate_count; i++) {
+        ballot[i] = &candidates[i].votes;
+    }
+    for (int i = 0; i < candidate_count; i++) {
+        printf("Winner: %i %s\n", candidates[i].votes, candidates[i].name);
+        // TODO: 
+        for (int j = i + 1; j < candidate_count - 1; j++) {
+            if (ballot[j - 1] > ballot[j]) {
+                isGreater++;
+                if (idx == candidates[i].votes) {
+                    printf("Winner: %i %s\n", candidates[i].votes, candidates[i].name);
+                }
+                idx = i;
+            }
+        }
+    }
+    // TODO: 
+    printf("%i\n", idx);
+    for (int i = 0; i < candidate_count; i++) {
+        if (idx == candidates[i].votes) {
+            printf("Winner: %i %s\n", candidates[i].votes, candidates[i].name);
+        }
+    }
     return;
 }
 
