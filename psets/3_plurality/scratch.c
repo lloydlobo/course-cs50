@@ -5,6 +5,7 @@
 #include <ctype.h>
 #include <math.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -118,14 +119,13 @@ void print_winner(void) {
     for (int i = 0; i < candidate_count; i++) {
         ballot[i] = &candidates[i].votes;
     }
-    // [2,3,1] --> how will you sort this?
     typedef struct {
         int rI;
         int rNumI;
         int rJ;
         int rNumJ;
     } RankTest;
-    int test[] = {2, 3, 1, 9, 8, 7, 9, 6, 5, 4};
+    int test[] = {2, 3, 1, 9, 8, 7, 9, 6, 5, 4, 9, 1};
     int n = sizeof(test) / sizeof(test[0]);
     RankTest r[n];
     for (int i = 0; i < n - 1; i++) {
@@ -136,18 +136,11 @@ void print_winner(void) {
                 r[i].rJ = j;
                 r[i].rNumI = test[i];
                 r[i].rNumJ = test[j];
-                // break;
-                // printf("test greater: %i at index: %i\n", test[i], i);
             } else if (test[j] > test[i]) {
                 maxj = test[j];
-                // break;
             }
-            printf(" %i ", (r)[i].rI);
-            printf("ni:> %i <", (r)[i].rNumI);
-            printf(" %i ", (r)[i].rJ);
-            printf("nj:> %i <\n", (r)[i].rNumJ);
-        } // printf("maxi: %i | maxj: %i\n", maxi, maxj);
-    }   // HACK: Add last element too.
+        }
+    } // HACK: Add last element too.
     int len_ranks = sizeof(r) / sizeof(r[0]);
     typedef struct {
         int Index;
@@ -155,8 +148,6 @@ void print_winner(void) {
     } RankWinner;
     RankWinner rw[len_ranks - 1];
     for (int i = 0; i < len_ranks - 1; i++) {
-        printf(" %i ", r[i].rNumI);
-        // TODO: Collect ranks.
         for (int j = i + 1; j < len_ranks; j++) {
             if (r[i].rNumI > r[j].rNumJ) {
                 rw[i].Index = i;
@@ -169,13 +160,7 @@ void print_winner(void) {
         }
     }
 
-    printf("rw \n");
-    for (int i = 0; i < len_ranks; i++) {
-        printf("!! %i ", rw[i].Number);
-    }
-    printf("rw  end\n");
-    printf("\n");
-    // TODO: First find biggest number.
+    // : First find biggest number.
     RankWinner temp[len_ranks - 1];
     for (int prev = 0; prev < len_ranks - 1; prev++) {
         for (int curr = prev + 1; curr < len_ranks; curr++) {
@@ -187,26 +172,30 @@ void print_winner(void) {
                 rw[prev].Index = rw[curr].Index;
                 rw[curr].Number = temp[prev].Number;
                 rw[curr].Index = temp[prev].Index;
-                // break;
             } else if (rw[prev].Number <= rw[curr].Number) {
                 continue;
             }
         }
-        printf("~ %i %i ~", rw[prev].Index, rw[prev].Number);
     }
-    printf("\n");
-    printf("rw \n");
-    // TODO: Then find it frequency.
+    // : Then find its frequency.
     int draw_count = 0;
     for (int i = len_ranks - 1; i >= 0; i--) {
-        printf("id %i ", rw[i].Index);
-        printf("!! %i ", rw[i].Number);
         if (rw[len_ranks - 1].Number == rw[i].Number) {
             draw_count++;
         }
     }
-    printf("draw count: %i\n", draw_count);
-    printf("rw  end\n");
+    // MALLOC
+    char *dst_str = malloc(6); // free(ele);
+    dst_str = "malloc";
+    size_t memory = sizeof(dst_str);
+    char *src_str = malloc(memory);
+    for (size_t i = 0; i < memory; i++) {
+        char c = dst_str[i];
+        src_str[i] = c;
+    }
+    printf("\nsrc_str: %s\n", src_str);
+    free(src_str);
+
     // Declare winner.
     for (int i = 0; i < draw_count; i++) {
         RankWinner w = rw[len_ranks - 1 - i];
@@ -215,22 +204,11 @@ void print_winner(void) {
     // Last, return the indexes of the gretest number.
     printf("\n");
     candidate C[candidate_count];
-    // TODO:
+    // TODO: DEPRECATE
     for (int i = 0; i < candidate_count; i++) {
         C[i] = candidates[i];
-        printf("Winner: %i %s\n", candidates[i].votes, candidates[i].name);
-        for (int j = i + 1; j < candidate_count - 1; j++) {
-            if (ballot[j - 1] > ballot[j]) {
-                maxi++;
-                if (idx == candidates[i].votes) {
-                    printf("Winner: %i %s\n", candidates[i].votes, candidates[i].name);
-                }
-                idx = i;
-            }
-        }
     }
-    // TODO:
-    printf("%i\n", idx);
+    // TODO: DEPRECATE
     for (int i = 0; i < candidate_count; i++) {
         if (idx == candidates[i].votes) {
             printf("Winner: %i %s\n", candidates[i].votes, candidates[i].name);
