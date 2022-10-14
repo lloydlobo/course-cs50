@@ -57,10 +57,10 @@ int main(int argc, char *argv[]) {
     int n = sizeof(prompt_voter_count) / sizeof(prompt_voter_count[0]);
     int voter_count = atoi(prompt_voter_count);
     // Loop over all voters
-    char usrvote[100];
     char *voters;
     printf("voter_count: %i\n", voter_count);
     for (int i = 0; i < voter_count; i++) { // string name = get_string("Vote: ");
+        char usrvote[10];
         printf("Votes: ");
         fgets(usrvote, sizeof(usrvote), stdin);
         // Check for invalid vote if (!vote(&name)) { printf("Invalid vote.\n"); }
@@ -69,6 +69,8 @@ int main(int argc, char *argv[]) {
         // scoped function?
         if (!vote(usrvote)) {
             printf("Invalid vote.\n");
+        } else {
+            continue;
         }
     }
     print_winner(); // Display winner of election
@@ -80,28 +82,29 @@ bool vote(char *name) { // printf("bool vote(...) = %s\n", name);
     int n = candidate_count;
     char *ctrim;
     const char *t_c;
-    // Parse *name and remove newline.
     const char *t_n;
     int len_name = strlen(name) - 1;
     char copy[len_name];
     for (int i = 0; i < len_name; i++) {
-        char c = name[i];
-        copy[i] = c;
+        char ch = name[i];
+        copy[i] = ch;
+        t_n = copy; // FIX: Not iterating over each candi name?
     }
-    t_n = copy; // FIX: Not iterating over each candi name?
-    // Compare strings.
+    bool result = true;
     for (int i = 0; i < n; i++) {
-        printf("n: %i\n", n);
         t_c = (candidates)[i].name;
-        if (strcmp(t_c, t_n) == 0) {
+        const char *copy_name = t_n;
+        // Compare strings.
+        if (strcmp(t_c, copy_name) == 0) { // TODO: increment vote count.
+            result = true;
             printf("Found: %s\n", t_n);
-            // TODO: Add count to vote.
-            // return true;
+            break;
         } else {
-            continue;
+            result = false;
         }
+        printf(" loop index: %i\n", i);
     }
-    return true;
+    return result;
 }
 
 // Print the winner (or winners) of the election
