@@ -103,7 +103,7 @@ bool vote(char *name) {
   return isFound;
 }
 
-// Print the winner (or winners) of the election TODO:
+// Print the winner (or winners) of the election.
 void print_winner(void) {
   candidate *c = malloc(candidate_count);
   candidate *temp = malloc(candidate_count);
@@ -123,8 +123,30 @@ void print_winner(void) {
       }
     }
   }
-  for (int i = 0; i < candidate_count; i++) {
-    printf("%i %s\n", c[i].votes, c[i].name);
+  candidate *W = malloc(candidate_count);
+  for (int i = candidate_count - 1; i >= 0; i--) {
+    int curr = c[i].votes;
+    int next = c[i + 1].votes;
+    printf("prev: %i curr: %i\n", curr, next);
+    if (curr >= next) {
+      W[i] = c[i];
+      W[i + 1] = c[i + 1]; // HACK: Need modulus wrapping?
+    }
+  }
+  int draw_count = 0;
+  for (int i = candidate_count - 1; i >= 0; i--) {
+    int greater = c[candidate_count - 1].votes;
+    int smaller = c[i].votes;
+    if (greater >= smaller) {
+      if (greater > smaller) {
+        break;
+      } else {
+        draw_count++;
+      }
+    }
+  }
+  for (int i = candidate_count - 1; i >= candidate_count - draw_count; i--) {
+    printf("Winner: %i %s\n", W[i].votes, W[i].name);
   }
   return;
 }
