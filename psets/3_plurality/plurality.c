@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <string.h>
 #define BOOL bool
+#include <sqlite3.h>
 #define MAX 9 // Max number of candidates
 
 // Candidates have name and vote count
