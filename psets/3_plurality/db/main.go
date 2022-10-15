@@ -5,18 +5,30 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/uuid"
 	_ "github.com/mattn/go-sqlite3"
 )
+
+type Candidate struct {
+	Uuid uuid.UUID
+	Id   int
+	Name string
+	Vote int
+}
 
 // Set up a package-level variable called db to hold our database connection pool.
 // This variable will be used in several functions.
 //
 // DB is a database handle representing a pool of zero or more
 // underlying connections. It's safe for concurrent use by multiple goroutines.
-var db *sql.DB
+var (
+	db *sql.DB
+)
 
 func main() {
 	err := runMain(&os.Args)
@@ -25,23 +37,24 @@ func main() {
 	}
 }
 
-type Candidate struct {
-	Id   int
-	Name string
-	Vote int
-}
-
 // TODO: Add name, vote as os.Args.
 func runMain(arg *[]string) error {
 	c := Candidate{}
-	c.Id, c.Name, c.Vote = 1, "Ida", 3
-	cmd := os.Args[1]
 	err := OpenDatabase()
 	if err != nil {
 		return fmt.Errorf("failed to open database at : "+
 			" sql.Open(\"sqlite3\", \"./sqlite-database.db\") : %w\n", err)
 	}
 	if len(os.Args) > 1 {
+		cmd := os.Args[1] // Get cli input.
+		if len(os.Args) > 3 {
+			vote, err := strconv.Atoi(os.Args[3])
+			if err != nil {
+				return fmt.Errorf("failed to parse convert string to int : strconve.Atoi(os.Args[3]) : %w", err)
+			}
+			c.Uuid, c.Name, c.Vote = uuid.New(), strings.TrimSpace(os.Args[2]), vote
+			fmt.Printf("os.Args: %v\n", os.Args)
+		}
 		if cmp.Equal(cmd, "init") {
 			err := CreateTable()
 			if err != nil {
@@ -55,12 +68,18 @@ func runMain(arg *[]string) error {
 					" DisplayAllData() : %w\n", err)
 			}
 		} else if cmp.Equal(cmd, "new") {
-			err := InsertData(c.Id, c.Name, c.Vote)
+			err := InsertData(c.Uuid, c.Name, c.Vote)
+			fmt.Printf("c: %v\n", c)
 			if err != nil {
 				return fmt.Errorf("failed to insert new data at : "+
 					" InsertData(c.Id, c.Name, c.Vote) : %w\n", err)
 			}
 		}
+		// NOTE: RESET global var entry.
+		// entry.Id = 0
+		c.Vote = 0
+		c.Name = ""
+		c.Id = 0
 	}
 	return db.Ping()
 }
@@ -78,15 +97,10 @@ func OpenDatabase() error {
 	return db.Ping()
 }
 
-/*  Candidates have name and vote count
-    typedef struct {
-        char *name; // string name;
-        int votes;
-    } candidate; */
-
 func CreateTable() error {
+	// "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 	createTableSQL := `CREATE TABLE IF NOT EXISTS plurality (
-        "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+        "id" TEXT NOT NULL PRIMARY KEY,
         "name" TEXT,
         "vote" INTEGER
     );`
@@ -100,9 +114,11 @@ func CreateTable() error {
 	return nil
 }
 
-func InsertData(id int, name string, vote int) error {
+func InsertData(id uuid.UUID, name string, vote int) error {
 	insertDataSQL := `INSERT INTO plurality(id, name, vote) VALUES (?, ?, ?)`
+	fmt.Println(id, name, vote)
 	statement, err := db.Prepare(insertDataSQL)
+	fmt.Printf("statement: %v\n", statement)
 	if err != nil {
 		return fmt.Errorf("db.Prepare(insertDataSQL) failed to prepare : %w", err)
 	} // TODO: Use Fatalf?
@@ -121,7 +137,7 @@ func DisplayAllData() error {
 	defer row.Close()
 	for row.Next() {
 		var (
-			id   int
+			id   string
 			name string
 			vote int
 		)
