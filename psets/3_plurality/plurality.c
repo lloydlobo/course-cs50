@@ -1,29 +1,4 @@
 // https://cs50.harvard.edu/x/2022/psets/3/
-#include <ctype.h>
-#include <math.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#define BOOL bool
-#define MAX 9 // Max number of candidates
-
-// Candidates have name and vote count
-typedef struct {
-    char *name; // string name;
-    int votes;
-} candidate;
-candidate candidates[MAX]; // Array of candidates
-int candidate_count;       // Number of candidates
-
-// Function prototypes
-
-bool vote(char *name);
-void print_winner(void);
-
-void print_line(void) { printf("—————————————————————————————————\n"); }
-
 /* # Background
     Elections come in all shapes and sizes. In the UK, the Prime Minister is
     officially appointed by the monarch, who generally chooses the leader of
@@ -36,10 +11,29 @@ void print_line(void) { printf("————————————————
     or “winner take all”). In the plurality vote, every voter gets to vote for
     one candidate. At the end of the election, whichever candidate has the
     greatest number of votes is declared the winner of the election. */
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#define BOOL bool
+#define MAX 9 // Max number of candidates
 
-/*
- * main
- */
+// Candidates have name and vote count
+typedef struct {
+    char *name; // string name;
+    int votes;
+} candidate;
+
+candidate candidates[MAX]; // Array of candidates
+int candidate_count;       // Number of candidates
+
+// Function prototypes
+
+bool vote(char *name);
+void print_winner(void);
+void print_line(void) { printf("—————————————————————————————————\n"); }
+
+/* main */
 int main(int argc, char *argv[]) {
     print_line();
     printf("Week 3 : plurality\n");
@@ -61,13 +55,11 @@ int main(int argc, char *argv[]) {
     }
     printf("\n");
     print_line();
-
     char prompt_voter_count[100];
     printf("Number of voters: ");
     fgets(prompt_voter_count, sizeof(prompt_voter_count), stdin);
     int n = sizeof(prompt_voter_count) / sizeof(prompt_voter_count[0]);
     int voter_count = atoi(prompt_voter_count);
-
     // Loop over all voters
     for (int i = 0; i < voter_count; i++) { // string name = get_string("Vote: ");
         char usrvote[10];
@@ -77,7 +69,6 @@ int main(int argc, char *argv[]) {
             printf("Invalid vote.\n");
         }
     }
-
     // Display winner of election
     print_winner();
 }
@@ -91,10 +82,9 @@ bool vote(char *name) {
     const char *cache_vote;
     for (int i = 0; i < len_name; i++) {
         char c = name[i];
-        copy[i] = c; // HACK: Two instance of copied values.
+        copy[i] = c;
         cache_vote = copy;
     }
-
     for (int i = 0; i < candidate_count; i++) {
         const char *vote_name = cache_vote;
         const char *candidate_name = (candidates)[i].name;
@@ -108,7 +98,6 @@ bool vote(char *name) {
             isFound = false;
         }
     }
-
     return isFound;
 }
 
