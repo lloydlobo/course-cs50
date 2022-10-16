@@ -148,7 +148,7 @@ func NewCandidateName() (name string) {
 			randName = randName - 32
 		}
 		// Populate alternate with vowel.
-		if count%2 == 0 && count != cacheCount {
+		if cacheCount-count == 1 && cacheCount-count != 2 && count != cacheCount || count%2 == 0 && count != cacheCount {
 			vowel := []rune{'a', 'e', 'i', 'o', 'u'}
 			min, max := 0, len(vowel)-1
 			randOne, randTwo := rand.Intn(max-min+1)+min, rand.Intn(max-min+1)+min
@@ -183,7 +183,7 @@ func main() {
 
 	// Add candidate name.
 	for i := 0; i < cap(c); i++ {
-		fmt.Printf("c: %v %s %v\n", c[i].Id, c[i].Name, c[i].Vote)
+		fmt.Printf("c: %v %s %v %v\n", c[i].Id, c[i].Name, c[i].Vote, c[i].Uuid)
 	}
 	// example()
 	err := runMain(&os.Args)
