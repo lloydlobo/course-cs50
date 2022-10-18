@@ -33,6 +33,11 @@ typedef struct {
 CANDIDATE C[MAX];
 
 typedef struct {
+  int preference[MAX];
+} Preference;
+Preference P[MAX];
+
+typedef struct {
   int round;
   Votes Votes;
   int voter_count;
@@ -42,7 +47,8 @@ typedef struct {
 } Database;
 Database DB;
 
-int vote_round_counter;
+int curr_round;
+int curr_voter;
 // Array of candidates
 char *candidates[MAX]; // string candidates[MAX];
 pair pairs[MAX * (MAX - 1) / 2];
@@ -119,19 +125,22 @@ int main(int argc, char *argv[]) {
         printf("Invalid vote.\n");
         return 3;
       }
-    }
+    } // end of for j;
     record_preferences(ranks);
+    curr_voter += 1;
     // Reset votes for the next voter.
     for (int i = 0; i < candidate_count; i++) {
       C[i].rank = 0;
       C[i].gotVoted = false;
-      vote_round_counter = 0;
+      curr_round = 0;
       printf("%i", ranks[i]);
     }
     printf("\n");
   }
-  for (int i = 0; i < DB.valid_votes_counter; i++) {
-    printf("DB: %i\n", DB.Votes.votes[i]);
+  for (int i = 0; i < candidate_count; i++) {
+    for (int j = 0; j < candidate_count; j++) {
+      printf("%i ", P[i].preference[j]);
+    }
   }
 
   add_pairs();
@@ -142,7 +151,6 @@ int main(int argc, char *argv[]) {
 }
 
 // Update ranks given a new vote
-// TODO:
 bool vote(int rank, char *name, int ranks[]) {
   bool isRecorded = false;
   int rank_counter;
@@ -150,11 +158,11 @@ bool vote(int rank, char *name, int ranks[]) {
     if (strcmp(name, candidates[i]) == 0) { // matches true.
       if (!C[i].gotVoted) {                 // false
         DB.valid_votes_counter++;
-        vote_round_counter++;
-        isRecorded = true;
-        C[i].rank += vote_round_counter;
-        C[i].gotVoted = true;
+        curr_round++;
+        C[i].rank += curr_round;
         ranks[i] = C[i].rank;
+        C[i].gotVoted = true;
+        isRecorded = true;
       }
     } else {
       continue;
@@ -163,25 +171,14 @@ bool vote(int rank, char *name, int ranks[]) {
   // printf("\n");
   return isRecorded;
 }
-// https://excalidraw.com/#json=cQPUNXCxD-5W98FjWrCMC,SGqlyq-3CHsiP6PyqUn9iA
+
 // Update preferences given one voter's ranks
-// TODO:
 void record_preferences(int ranks[]) {
-  // int len_voters = sizeof(&ranks) / sizeof(ranks[0]);
-  // printf("len_voters: %i\n", len_voters); // 2??? 8/4.
-  int *preferences;
   for (int i = 0; i < candidate_count; i++) {
-    preferences[i] = C[i].rank;
-    C[i].preference = preferences[i];
-    DB.Votes.votes[i + DB.round * DB.candidate_count] = ranks[i];
-    printf("preferences: %i, %i, %i\n", C[i].preference, DB.round,
-           DB.Votes.votes[i + DB.round * DB.candidate_count]);
+    P[curr_voter].preference[i] = C[i].rank;
   }
-  for (int i = 0; i < 9; i++) {
-    printf("%i", DB.Votes.votes[i]);
-  }
-  printf("\n");
   DB.round++;
+  printf("\n");
   return;
 }
 
