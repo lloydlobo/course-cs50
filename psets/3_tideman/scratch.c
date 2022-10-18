@@ -21,9 +21,9 @@ typedef struct {
 } pair;
 
 typedef struct {
-  int pref[3];
+  int to[3];
 } ARRAY_2D;
-ARRAY_2D preferences_2D[MAX];
+ARRAY_2D prefer_this[MAX];
 typedef struct {
   int votes[MAX];
 } Votes;
@@ -169,7 +169,13 @@ bool vote(int rank, char *name, int ranks[]) {
         DB.valid_votes_counter++;
         curr_round++;
         C[i].rank += curr_round;
-        ranks[i] = C[i].rank;
+        // Voter's ith preference.
+        ranks[i] = C[i].rank; // TODO: Deprecate old method.
+        // ranks[i] = C[i].id; // NOTE: For this method.
+        // | 3 | 0 4 | 1 | 2 |
+        // Cand 3 over 0,4,1,2
+        // Cand 0 over 4,1,2
+        // ...
         C[i].gotVoted = true;
         isRecorded = true;
       }
@@ -177,7 +183,6 @@ bool vote(int rank, char *name, int ranks[]) {
       continue;
     }
   }
-  // printf("\n");
   return isRecorded;
 }
 
@@ -211,36 +216,78 @@ void record_preferences(int ranks[]) {
       int r_diff = r_next - r_curr;
       // Preffered If difference is more than 0.
       if (r_diff > 0) {
-        preferences_2D[i].pref[j]++;
+        prefer_this[i].to[j]++;
+        preferences[i][j]++;
       } else if (r_diff == 0) {
-        preferences_2D[i].pref[j] += 0;
+        prefer_this[i].to[j] += 0;
+        preferences[i][j] += 0;
       }
     }
   }
   printf("\n");
 }
 
-// TODO: 0 3 2 3 2 0 0 2 3
-// 0 3 2
-// 2 0 1
-// 3 1 0
 // Record pairs of candidates where one is preferred over the other
+//
+// Add each pair of candidates to pairs array,
+// if one candidate is prefered over the other.
+// Update global variable pair_count to be,
+// the total number of pairs.
+//
+// # Example
+//
+// - preferences:
+// ~ | 0 1 2
+// ~~~~~~~~~~
+// 0 | 0 3 1
+// 1 | 1 0 2
+// 2 | 3 2 0
+// - result:
+// winner 0 | winner 2
+// loser  1 | loser  0
+//
+// pair pairs[MAX * (MAX - 1) / 2];
 void add_pairs(void) {
   int length = candidate_count;
-  printf("pairs\n");
-
+  // Scan preferences 2D array (p[][]). best of 3 cases.
+  // Scan candidate 0.
+  // if p[0][j] i.e. cand-0 has 3 wins over cand-1 and 1 over cand-2.
+  // repeat for all 3 rows. p[i][j]. 0->i->3
+  // if p[0][1] > p[1][0] if p[i][j] > p[j][i] . Winner 0 to 1.
+  // if p[2][0] > p[0][2] if p[i][j] > p[j][i] . Winner 2 to 0.
   for (int i = 0; i < length; i++) {
     for (int j = 0; j < length; j++) {
-      printf("%i", preferences_2D[i].pref[j]);
+      if (preferences[i][j] > preferences[j][i]) {
+        pairs[i].winner = i; // i=1;j=0 | winner 0 loser 1.
+        pairs[i].loser = j;  // i=2;j=0 | winner 2 loser 0.
+      }
+      // TODO: Filter 2 best cases!!
     }
-  }
-  int n = MAX * (MAX - 1) / 2;
-  for (int i = 0; i < n; i++) {
-    pairs[i].winner = C[i].id;
+    printf("win: %i lose: %i\n", pairs[i].winner, pairs[i].loser);
   }
 
   return;
 }
+// 0 3 2
+// 2 0 1
+// 3 1 0
+
+/* Number of voters: 4
+Rank 1: a
+Rank 2: c
+Rank 3: b
+Rank 1: a
+Rank 2: c
+Rank 3: b
+Rank 1: c
+Rank 2: a
+Rank 3: b
+Rank 1: b
+Rank 2: a
+Rank 3: c
+win: 0 lose: 2
+win: 0 lose: 0   FIX: weird.
+win: 2 lose: 1 */
 
 // Sort pairs in decreasing order by strength of victory
 void sort_pairs(void) {
