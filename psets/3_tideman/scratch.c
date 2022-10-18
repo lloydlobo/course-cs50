@@ -21,6 +21,10 @@ typedef struct {
 } pair;
 
 typedef struct {
+  int pref[3];
+} ARRAY_2D;
+ARRAY_2D cache[MAX];
+typedef struct {
   int votes[MAX];
 } Votes;
 
@@ -199,41 +203,28 @@ Pick A0 as pivot
 Scan over [A, B, C]
 Compare A to A; A to B; A to C
 repeat for B0 & C0.
-
-if Rand of A0 is higher than B & C
-preference[i][j]++ where i is index of A0
-else if A0 scans A
-preference[i][j==i] = - where i is index of A0
+    if Rand of A0 is higher than B & C
+        preference[i][j]++ where i is index of A0
+    else if A0 scans A
+        preference[i][j==i] = - where i is index of A0
 */
 // Update preferences given one voter's ranks
-typedef struct {
-  int pref[3];
-} ARRAY_2D;
 void record_preferences(int ranks[]) {
   int length = candidate_count;
   ARRAY_2D simple_arr[candidate_count];
-
-  // Scan A@ then B@ then C@
+  // Scan A@ then B@ then C@.
   for (int i = 0; i < length; i++) {
-    // Scan A then B then C. PIVOT
-    // 0 then 1 then 2 ---> id.
-    // printf("%i\n", ranks[i]);
     int curr_rank = ranks[i];
-    char *curr_c = C[i].name;
     for (int j = 0; j < length; j++) {
-      // Scan A then B then C
-      int next_rank = ranks[j]; // >A >B >C
-                                // >0 >1 >2
-      int diff_rank =
-          next_rank - curr_rank; // If lesser than 0 or 1. then prefered.
-      printf("curr::%i next::%i; diff %i\n", curr_rank, next_rank, diff_rank);
+      int next_rank = ranks[j];
+      int diff_rank = next_rank - curr_rank;
       simple_arr[i].pref[j] = 0;
-      if (diff_rank > 0) {
+      if (diff_rank > 0) { // If lesser than 0 or 1. then prefered.
         simple_arr[i].pref[j]++;
-        int pint = simple_arr[i].pref[j];
-        printf("pint: %i\n", pint);
+        cache[i].pref[j]++;
       } else if (diff_rank == 0) {
         simple_arr[i].pref[j] = 0;
+        cache[i].pref[j] += 0;
       }
     }
   }
@@ -242,72 +233,7 @@ void record_preferences(int ranks[]) {
       printf("%i\n", simple_arr[i].pref[j]);
     }
   }
-  // for (int i = 0; i < length; i++) {
-  //   for (int j = 0; j < length; j++) {
-  //     printf("%i %i ", i, j);
-  //     printf("%i\n", simple_arr[i].pref[j]);
-  //   }
-  //   printf("\n");
-  // }
   printf("\n");
-}
-
-/*
-Ranked
-1. A
-2. C
-3. B
-Prefer
-A -> A 0
-A -> C 1
-A -> B 2
-B -> A 0
-B -> C 0
-B -> B 0
-C -> A 0
-C -> C 0
-C -> B 1
-// Pseudocode
-Find length of candidates
-Scan for each candidate
-Pick A0
-Scan over [A, B, C]
-Compare A to A; A to B; A to C
-repeat for B0 & C0.
-
-if Rand of A0 is higher than B & C
-preference[i][j]++ where i is index of A0
-else if A0 scans A
-preference[i][j==i] = - where i is index of A0
-*/
-// Update preferences given one voter's ranks
-void arch_record_preferences(int ranks[]) {
-  for (int i = 0; i < candidate_count; i++) {
-    if (i != curr_voter) { // HACK: Remove this, for input to not be zero here.
-      P[curr_voter].input[i] = C[i].rank;
-    }
-  }
-  // TODO: Scan & allot preference one by one.
-
-  for (int i = 0; i < candidate_count; i++) {
-    for (int j = 0; j < candidate_count; j++) {
-      int curr, next; // curr = C[curr_voter].rank;
-      int wrap = (j + 1) % candidate_count;
-      curr = C[i].rank;
-      next = C[j].rank;
-      printf("curr,next::%i %i\n", curr, next);
-      if (curr < next) {
-        time_t x;
-        P[curr_voter].output[j]++;
-        int out = P[curr_voter].output[j];
-        printf("%i%i::%i\n", curr_voter, j, out);
-      }
-    }
-    // P[curr_voter].output[i] = curr_tally;
-  }
-  DB.round++;
-  printf("\n");
-  return;
 }
 
 // TODO: 0 3 2 3 2 0 0 2 3
@@ -316,6 +242,14 @@ void arch_record_preferences(int ranks[]) {
 // 3 1 0
 // Record pairs of candidates where one is preferred over the other
 void add_pairs(void) {
+  int length = candidate_count;
+  printf("pairs\n");
+
+  for (int i = 0; i < length; i++) {
+    for (int j = 0; j < length; j++) {
+      printf("%i", cache[i].pref[j]);
+    }
+  }
   int n = MAX * (MAX - 1) / 2;
   for (int i = 0; i < n; i++) {
     pairs[i].winner = C[i].id;
