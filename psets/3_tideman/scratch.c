@@ -247,6 +247,15 @@ void record_preferences(int ranks[]) {
 // loser  1 | loser  0
 //
 // pair pairs[MAX * (MAX - 1) / 2];
+//
+// # Pseudocode
+//
+// Scan preferences 2D array (p[][]). best of n-1 cases.
+// Scan candidate 0.
+// if p[0][j] i.e. cand-0 has 3 wins over cand-1 and 1 over cand-2.
+// repeat for all 3 rows. p[i][j]. 0->i->3
+// if p[0][1] > p[1][0] if p[i][j] > p[j][i] . Winner 0 to 1.
+// if p[2][0] > p[0][2] if p[i][j] > p[j][i] . Winner 2 to 0.
 /*
 rank:  voter | preferences:
 a c b  0     | a b c  ~
@@ -268,12 +277,6 @@ i::j::2::1 : win: 2 lose: 1
 2::2 | w: 0 l: 0 */
 void add_pairs(void) {
   int length = candidate_count;
-  // Scan preferences 2D array (p[][]). best of 3 cases.
-  // Scan candidate 0.
-  // if p[0][j] i.e. cand-0 has 3 wins over cand-1 and 1 over cand-2.
-  // repeat for all 3 rows. p[i][j]. 0->i->3
-  // if p[0][1] > p[1][0] if p[i][j] > p[j][i] . Winner 0 to 1.
-  // if p[2][0] > p[0][2] if p[i][j] > p[j][i] . Winner 2 to 0.
   for (int i = 0; i < length; i++) {
     for (int j = 0; j < length; j++) {
       int pw, pl;
@@ -283,9 +286,10 @@ void add_pairs(void) {
       if (pw > pl && i != j) {
         pairs[i].winner = i; // i=1;j=0 | winner 0 loser 1.
         pairs[i].loser = j;  // i=2;j=0 | winner 2 loser 0.
-        printf("i::j::%i::%i : win: %i lose: %i\n", i, j, pairs[i].winner,
-               pairs[i].loser);
-      } // TODO: Filter 2 best cases!!
+      } else if (pw == pl && pw == 0) {
+        pairs[i].winner = -i;
+        pairs[i].loser = -j;
+      }
     }
   }
   return;
@@ -294,26 +298,25 @@ void add_pairs(void) {
 // 2 0 1
 // 3 1 0
 
-/* Number of voters: 4
-Rank 1: a
-Rank 2: c
-Rank 3: b
-Rank 1: a
-Rank 2: c
-Rank 3: b
-Rank 1: c
-Rank 2: a
-Rank 3: b
-Rank 1: b
-Rank 2: a
-Rank 3: c
-win: 0 lose: 2
-win: 0 lose: 0   FIX: 0 , 0 same.
-win: 2 lose: 1 */
-
 // Sort pairs in decreasing order by strength of victory
+//
+// TODO:
+//
 void sort_pairs(void) {
-  // TODO
+  int n = candidate_count;
+  for (int i = 0; i < n; i++) {
+    for (int j = 0; j < n; j++) {
+      int winner, loser;
+      winner = pairs[i].winner;
+      loser = pairs[i].loser;
+      // Valid pairs.
+      if (winner != loser) {
+        if (winner != 0 && loser != 0) {
+          printf("win::%i | los::%i\n", winner, loser);
+        }
+      }
+    }
+  }
   return;
 }
 
