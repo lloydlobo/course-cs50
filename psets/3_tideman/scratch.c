@@ -247,6 +247,25 @@ void record_preferences(int ranks[]) {
 // loser  1 | loser  0
 //
 // pair pairs[MAX * (MAX - 1) / 2];
+/*
+rank:  voter | preferences:
+a c b  0     | a b c  ~
+a c b  1     | 0 3 3  a
+c a b  2     | 1 0 1  b
+b a c  3     | 1 3 0  c
+result:
+0::0 | w: 0 l: 0
+0::1 | w: 3 l: 1
+i::j::0::1 : win: 0 lose: 1
+0::2 | w: 3 l: 1
+i::j::0::2 : win: 0 lose: 2
+1::0 | w: 1 l: 3
+1::1 | w: 0 l: 0
+1::2 | w: 1 l: 3
+2::0 | w: 1 l: 3
+2::1 | w: 3 l: 1
+i::j::2::1 : win: 2 lose: 1
+2::2 | w: 0 l: 0 */
 void add_pairs(void) {
   int length = candidate_count;
   // Scan preferences 2D array (p[][]). best of 3 cases.
@@ -257,15 +276,18 @@ void add_pairs(void) {
   // if p[2][0] > p[0][2] if p[i][j] > p[j][i] . Winner 2 to 0.
   for (int i = 0; i < length; i++) {
     for (int j = 0; j < length; j++) {
-      if (preferences[i][j] > preferences[j][i]) {
+      int pw, pl;
+      pw = preferences[i][j];
+      pl = preferences[j][i];
+      printf("%i::%i | w: %i l: %i\n", i, j, pw, pl);
+      if (pw > pl && i != j) {
         pairs[i].winner = i; // i=1;j=0 | winner 0 loser 1.
         pairs[i].loser = j;  // i=2;j=0 | winner 2 loser 0.
-      }
-      // TODO: Filter 2 best cases!!
+        printf("i::j::%i::%i : win: %i lose: %i\n", i, j, pairs[i].winner,
+               pairs[i].loser);
+      } // TODO: Filter 2 best cases!!
     }
-    printf("win: %i lose: %i\n", pairs[i].winner, pairs[i].loser);
   }
-
   return;
 }
 // 0 3 2
@@ -286,7 +308,7 @@ Rank 1: b
 Rank 2: a
 Rank 3: c
 win: 0 lose: 2
-win: 0 lose: 0   FIX: weird.
+win: 0 lose: 0   FIX: 0 , 0 same.
 win: 2 lose: 1 */
 
 // Sort pairs in decreasing order by strength of victory
