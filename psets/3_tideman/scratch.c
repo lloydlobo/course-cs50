@@ -28,8 +28,19 @@ typedef struct {
   Votes votes_per_round;
   int rank;
   bool gotVoted;
+  int preference;
 } CANDIDATE;
 CANDIDATE C[MAX];
+
+typedef struct {
+  int round;
+  Votes Votes;
+  int voter_count;
+  int candidate_count;
+  int votes_counter;
+  int valid_votes_counter;
+} Database;
+Database DB;
 
 int vote_round_counter;
 // Array of candidates
@@ -80,7 +91,8 @@ int main(int argc, char *argv[]) {
   printf("Number of voters: ");
   fgets(user_prompt, sizeof(user_prompt), stdin);
   voter_count = atoi(user_prompt);
-  printf("voter_count: %i\n", voter_count);
+  DB.voter_count = voter_count;
+  DB.candidate_count = candidate_count;
 
   // Query for votes
   for (int i = 0; i < voter_count; i++) {
@@ -102,6 +114,7 @@ int main(int argc, char *argv[]) {
           *ptr = '\0';
         }
       }
+      DB.votes_counter++;
       if (!vote(j, name, ranks)) {
         printf("Invalid vote.\n");
         return 3;
@@ -116,6 +129,9 @@ int main(int argc, char *argv[]) {
       printf("%i", ranks[i]);
     }
     printf("\n");
+  }
+  for (int i = 0; i < DB.valid_votes_counter; i++) {
+    printf("DB: %i\n", DB.Votes.votes[i]);
   }
 
   add_pairs();
@@ -133,6 +149,7 @@ bool vote(int rank, char *name, int ranks[]) {
   for (int i = 0; i < candidate_count; i++) {
     if (strcmp(name, candidates[i]) == 0) { // matches true.
       if (!C[i].gotVoted) {                 // false
+        DB.valid_votes_counter++;
         vote_round_counter++;
         isRecorded = true;
         C[i].rank += vote_round_counter;
@@ -143,13 +160,28 @@ bool vote(int rank, char *name, int ranks[]) {
       continue;
     }
   }
-  printf("\n");
+  // printf("\n");
   return isRecorded;
 }
 // https://excalidraw.com/#json=cQPUNXCxD-5W98FjWrCMC,SGqlyq-3CHsiP6PyqUn9iA
 // Update preferences given one voter's ranks
+// TODO:
 void record_preferences(int ranks[]) {
-  // TODO
+  // int len_voters = sizeof(&ranks) / sizeof(ranks[0]);
+  // printf("len_voters: %i\n", len_voters); // 2??? 8/4.
+  int *preferences;
+  for (int i = 0; i < candidate_count; i++) {
+    preferences[i] = C[i].rank;
+    C[i].preference = preferences[i];
+    DB.Votes.votes[i + DB.round * DB.candidate_count] = ranks[i];
+    printf("preferences: %i, %i, %i\n", C[i].preference, DB.round,
+           DB.Votes.votes[i + DB.round * DB.candidate_count]);
+  }
+  for (int i = 0; i < 9; i++) {
+    printf("%i", DB.Votes.votes[i]);
+  }
+  printf("\n");
+  DB.round++;
   return;
 }
 
