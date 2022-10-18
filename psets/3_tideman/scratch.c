@@ -23,7 +23,7 @@ typedef struct {
 typedef struct {
   int pref[3];
 } ARRAY_2D;
-ARRAY_2D cache[MAX];
+ARRAY_2D preferences_2D[MAX];
 typedef struct {
   int votes[MAX];
 } Votes;
@@ -182,55 +182,39 @@ bool vote(int rank, char *name, int ranks[]) {
 }
 
 /*
-Ranked
-1. A
-2. C
-3. B
-Prefer
-A -> A 0
-A -> C 1
-A -> B 2
-B -> A 0
-B -> C 0
-B -> B 0
-C -> A 0
-C -> C 0
-C -> B 1
-// Pseudocode
-Find length of candidates
-Scan for each candidate
-Pick A0 as pivot
-Scan over [A, B, C]
-Compare A to A; A to B; A to C
-repeat for B0 & C0.
-    if Rand of A0 is higher than B & C
-        preference[i][j]++ where i is index of A0
-    else if A0 scans A
-        preference[i][j==i] = - where i is index of A0
-*/
-// Update preferences given one voter's ranks
+ * Update preferences given one voter's ranks
+ *
+ * # Example:
+ *
+ * 1. A 2. C 3. B
+ * Preference logic:
+ * A -> A 0 | A -> C 1 | A -> B 2 |
+ * B -> A 0 | B -> C 0 | B -> B 0 |
+ * C -> A 0 | C -> C 0 | C -> B 1 |
+ *
+ * # Pseudocode:
+ *
+ * Scan for each candidate Pick A0 as pivot
+ * Scan over [A, B, C] Compare A to A; A to B; A to C
+ * repeat for B0 & C0.
+ *     if Rand of A0 is higher than B & C
+ *         preference[i][j]++ where i is index of A0
+ *     else if A0 scans A
+ *         preference[i][j==i] = - where i is index of A0 */
 void record_preferences(int ranks[]) {
-  int length = candidate_count;
-  ARRAY_2D simple_arr[candidate_count];
+  int n = candidate_count;
   // Scan A@ then B@ then C@.
-  for (int i = 0; i < length; i++) {
-    int curr_rank = ranks[i];
-    for (int j = 0; j < length; j++) {
-      int next_rank = ranks[j];
-      int diff_rank = next_rank - curr_rank;
-      simple_arr[i].pref[j] = 0;
-      if (diff_rank > 0) { // If lesser than 0 or 1. then prefered.
-        simple_arr[i].pref[j]++;
-        cache[i].pref[j]++;
-      } else if (diff_rank == 0) {
-        simple_arr[i].pref[j] = 0;
-        cache[i].pref[j] += 0;
+  for (int i = 0; i < n; i++) {
+    int r_curr = ranks[i];
+    for (int j = 0; j < n; j++) {
+      int r_next = ranks[j];
+      int r_diff = r_next - r_curr;
+      // Preffered If difference is more than 0.
+      if (r_diff > 0) {
+        preferences_2D[i].pref[j]++;
+      } else if (r_diff == 0) {
+        preferences_2D[i].pref[j] += 0;
       }
-    }
-  }
-  for (int i = 0; i < length; i++) {
-    for (int j = 0; j < length; j++) {
-      printf("%i\n", simple_arr[i].pref[j]);
     }
   }
   printf("\n");
@@ -247,7 +231,7 @@ void add_pairs(void) {
 
   for (int i = 0; i < length; i++) {
     for (int j = 0; j < length; j++) {
-      printf("%i", cache[i].pref[j]);
+      printf("%i", preferences_2D[i].pref[j]);
     }
   }
   int n = MAX * (MAX - 1) / 2;
