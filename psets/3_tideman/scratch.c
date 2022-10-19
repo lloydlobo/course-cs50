@@ -269,28 +269,20 @@ b a c  3     | 1 3 0  c
 */
 void add_pairs(void) {
   int n = candidate_count;
-  int counter;
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) {
-      int pw, pl;
-      pw = preferences[i][j];
-      pl = preferences[j][i];
+      int pw = preferences[i][j];
+      int pl = preferences[j][i];
       if (pw > pl && i != j && pw != pl) {
-        pairs[counter].winner = i; // i=1;j=0 | winner 0 loser 1.
-        pairs[counter].loser = j;  // i=2;j=0 | winner 2 loser 0.
-        printf("%i [p:%2i p:%2i] ", counter, pairs[counter].winner,
-               pairs[counter].loser);
-        counter++;
+        pairs[pair_count].winner = i;
+        pairs[pair_count].loser = j;
+        pair_count++;
       }
-      // pairs[idx].winner = -100 + i;
-      // pairs[idx].loser = -100 + j;
-    }
-    printf("\n");
-  }
+    } // end of for loop j.
+  }   // end of for loop i.
   return;
 }
 // TODO:
-// Sort pairs in decreasing order by strength of victory
 /*  preferences::
     [w: 0 l: 0] [w: 3 l: 1] [w: 3 l: 1]
     [w: 1 l: 3] [w: 0 l: 0] [w: 1 l: 3]
@@ -305,48 +297,72 @@ typedef struct {
   int strength;
   int index;
 } TMP;
+// Sort pairs in decreasing order by strength of victory
+//
+// The function should sort the pairs array in decreasing order of strength of
+// victory, where strength of victory is defined to be the number of voters who
+// prefer the preferred candidate. If multiple pairs have the same strength of
+// victory, you may assume that the order does not matter.
 void sort_pairs(void) {
-  int idx, winner, loser;
+  int pw, pl;
   int n = candidate_count;
   int n_exp = n * (n - 1) / 2;
   TMP temp_pairs[n_exp];
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) {
-      idx = n * i + j;
-      winner = pairs[idx].winner;
-      loser = pairs[idx].loser;
-      // Valid pairs.=>  win::0 | los::1 win::0 | los::2 win::2 | los::1
-      if (winner != loser && winner >= 0 && loser >= 0) {
-        // Find diference between count of preferences btw two candidates.
-        int strength = preferences[winner][loser] - preferences[loser][winner];
-        if (strength > 0) { // Allot strength to temp_pairs array.
-          temp_pairs[idx].pair.winner = winner;
-          temp_pairs[idx].pair.loser = loser;
-          temp_pairs[idx].strength = strength;
+      int idx = n * i + j;
+      pw = pairs[idx].winner;
+      pl = pairs[idx].loser;
+      // Find diference between count of preferences btw two candidates.
+      if (pw != pl && pw >= 0 && pl >= 0) {
+        // int strength = preferences[pw][pl] - preferences[pl][pw];
+        int strength_voters_count = preferences[pw][pl];
+        if (strength_voters_count > 0) { // Allot strength to temp_pairs array.
+          temp_pairs[idx].pair.winner = pw;
+          temp_pairs[idx].pair.loser = pl;
+          temp_pairs[idx].strength = strength_voters_count;
           temp_pairs[idx].index = idx;
         }
       }
     }
   }
   // Sort by strength.
+  // Order doesn't matter if strength of each pair is same.
   printf("temp_pairs::\n");
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) {
       int idx = n * i + j;
+      int curr = idx;
+      int next = (idx + 1) % n;
       if (idx == temp_pairs[idx].index) {
         int s = temp_pairs[idx].strength;
         int w = temp_pairs[idx].pair.winner;
         int l = temp_pairs[idx].pair.loser;
+        printf("%i%i ", curr, next);
         printf("%i [%i %i] ", s, w, l);
       }
     }
   }
+  printf("\n");
   return;
 }
 
 // Lock pairs into the candidate graph in order, without creating cycles
 void lock_pairs(void) {
   // TODO
+  for (int i = 0; i < pair_count; i++) {
+    for (int j = 0; j < pair_count; j++) {
+      int idx = pair_count * i + j;
+      int pi = pairs[idx].winner;
+      int pj = pairs[idx].loser;
+      if (pi >= 0 && pj >= 0) {
+        locked[pi][pj] = true;
+        printf("%i", locked[i][j]);
+      }
+    }
+    printf("\n");
+  }
+
   return;
 }
 
