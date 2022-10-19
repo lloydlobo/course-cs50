@@ -269,23 +269,21 @@ b a c  3     | 1 3 0  c
 */
 void add_pairs(void) {
   int n = candidate_count;
+  int counter;
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) {
       int pw, pl;
-      int idx = n * i + j;
       pw = preferences[i][j];
       pl = preferences[j][i];
-      if (pw == pl) {
-        pairs[idx].winner = -i;
-        pairs[idx].loser = -j;
-      } else if (pw > pl && i != j) {
-        pairs[idx].winner = i; // i=1;j=0 | winner 0 loser 1.
-        pairs[idx].loser = j;  // i=2;j=0 | winner 2 loser 0.
-      } else {
-        pairs[idx].winner = -100 + i;
-        pairs[idx].loser = -100 + j;
+      if (pw > pl && i != j && pw != pl) {
+        pairs[counter].winner = i; // i=1;j=0 | winner 0 loser 1.
+        pairs[counter].loser = j;  // i=2;j=0 | winner 2 loser 0.
+        printf("%i [p:%2i p:%2i] ", counter, pairs[counter].winner,
+               pairs[counter].loser);
+        counter++;
       }
-      printf("[p:%2i p:%2i] ", pairs[n * i + j].winner, pairs[n * i + j].loser);
+      // pairs[idx].winner = -100 + i;
+      // pairs[idx].loser = -100 + j;
     }
     printf("\n");
   }
@@ -301,45 +299,36 @@ void add_pairs(void) {
     [p: 0 p: 0] [p: 0 p: 1] [p: 0 p: 2]
     [p:-99 p:-100] [p:-1 p:-1] [p:-99 p:-98]
     [p:-98 p:-100] [p: 2 p: 1] [p:-2 p:-2] */
+
+typedef struct {
+  pair pair;
+  int strength;
+  int index;
+} TMP;
 void sort_pairs(void) {
   int idx, winner, loser;
   int n = candidate_count;
   int n_exp = n * (n - 1) / 2;
-  typedef struct {
-    pair pair;
-    int strength;
-    int index;
-  } TMP;
   TMP temp_pairs[n_exp];
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) {
       idx = n * i + j;
       winner = pairs[idx].winner;
       loser = pairs[idx].loser;
-      // Valid pairs.
+      // Valid pairs.=>  win::0 | los::1 win::0 | los::2 win::2 | los::1
       if (winner != loser && winner >= 0 && loser >= 0) {
-        // win::0 | los::1 win::0 | los::2 win::2 | los::1
         // Find diference between count of preferences btw two candidates.
         int strength = preferences[winner][loser] - preferences[loser][winner];
-        // Allot strength to temp_pairs array.
-        if (strength > 0) {
-          printf("{%i %i} ", preferences[winner][loser],
-                 preferences[loser][winner]);
+        if (strength > 0) { // Allot strength to temp_pairs array.
           temp_pairs[idx].pair.winner = winner;
           temp_pairs[idx].pair.loser = loser;
           temp_pairs[idx].strength = strength;
           temp_pairs[idx].index = idx;
-          int s = temp_pairs[idx].strength;
-          int w = temp_pairs[idx].pair.winner;
-          int l = temp_pairs[idx].pair.loser;
-          printf("%i [%i %i] ", s, w, l);
         }
-
-        // Sort by strength.
       }
     }
   }
-  printf("\n");
+  // Sort by strength.
   printf("temp_pairs::\n");
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) {
