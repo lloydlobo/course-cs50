@@ -146,10 +146,14 @@ int main(int argc, char *argv[]) {
     printf("\n");
   }
   printf("\n");
+  printf("preferences::\n");
   for (int i = 0; i < candidate_count; i++) {
     for (int j = 0; j < candidate_count; j++) {
-      printf("%i ", P[i].output[j]);
+      int pw = preferences[i][j];
+      int pl = preferences[j][i];
+      printf("[w:%2i l:%2i] ", pw, pl);
     }
+    printf("\n");
   }
   printf("\n");
   add_pairs();
@@ -262,19 +266,7 @@ a c b  0     | a b c  ~
 a c b  1     | 0 3 3  a
 c a b  2     | 1 0 1  b
 b a c  3     | 1 3 0  c
-result:
-0::0 | w: 0 l: 0
-0::1 | w: 3 l: 1
-i::j::0::1 : win: 0 lose: 1
-0::2 | w: 3 l: 1
-i::j::0::2 : win: 0 lose: 2
-1::0 | w: 1 l: 3
-1::1 | w: 0 l: 0
-1::2 | w: 1 l: 3
-2::0 | w: 1 l: 3
-2::1 | w: 3 l: 1
-i::j::2::1 : win: 2 lose: 1
-2::2 | w: 0 l: 0 */
+*/
 void add_pairs(void) {
   int length = candidate_count;
   for (int i = 0; i < length; i++) {
@@ -282,18 +274,36 @@ void add_pairs(void) {
       int pw, pl;
       pw = preferences[i][j];
       pl = preferences[j][i];
-      printf("%i::%i | w: %i l: %i\n", i, j, pw, pl);
-      if (pw > pl && i != j) {
-        pairs[i].winner = i; // i=1;j=0 | winner 0 loser 1.
-        pairs[i].loser = j;  // i=2;j=0 | winner 2 loser 0.
-      } else if (pw == pl && pw == 0) {
-        pairs[i].winner = -i;
-        pairs[i].loser = -j;
+      if (pw == pl) {
+        pairs[i + j].winner = -i;
+        pairs[i + j].loser = -j;
+      } else if (pw > pl && i != j) {
+        pairs[i + j].winner = i; // i=1;j=0 | winner 0 loser 1.
+        pairs[i + j].loser = j;  // i=2;j=0 | winner 2 loser 0.
+      } else {
+        pairs[i + j].winner = -100 + i;
+        pairs[i + j].loser = -100 + j;
       }
+      printf("[p:%2i p:%2i] ", pairs[i + j].winner, pairs[i + j].loser);
     }
+    printf("\n");
   }
   return;
 }
+
+// result:
+// 0::0 | w: 0 l: 0
+// 0::1 | w: 3 l: 1
+// i::j::0::1 : win: 0 lose: 1
+// 0::2 | w: 3 l: 1
+// i::j::0::2 : win: 0 lose: 2
+// 1::0 | w: 1 l: 3
+// 1::1 | w: 0 l: 0
+// 1::2 | w: 1 l: 3
+// 2::0 | w: 1 l: 3
+// 2::1 | w: 3 l: 1
+// i::j::2::1 : win: 2 lose: 1
+// 2::2 | w: 0 l: 0
 // 0 3 2
 // 2 0 1
 // 3 1 0
