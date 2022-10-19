@@ -302,17 +302,53 @@ void add_pairs(void) {
     [p:-99 p:-100] [p:-1 p:-1] [p:-99 p:-98]
     [p:-98 p:-100] [p: 2 p: 1] [p:-2 p:-2] */
 void sort_pairs(void) {
+  int idx, winner, loser;
   int n = candidate_count;
+  int n_exp = n * (n - 1) / 2;
+  typedef struct {
+    pair pair;
+    int strength;
+    int index;
+  } TMP;
+  TMP temp_pairs[n_exp];
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) {
-      int winner, loser;
-      int idx = n * i + j;
+      idx = n * i + j;
       winner = pairs[idx].winner;
       loser = pairs[idx].loser;
-      // win::0 | los::1 win::0 | los::2 win::2 | los::1
       // Valid pairs.
       if (winner != loser && winner >= 0 && loser >= 0) {
-        printf("win::%i | los::%i\n", winner, loser);
+        // win::0 | los::1 win::0 | los::2 win::2 | los::1
+        // Find diference between count of preferences btw two candidates.
+        int strength = preferences[winner][loser] - preferences[loser][winner];
+        // Allot strength to temp_pairs array.
+        if (strength > 0) {
+          printf("{%i %i} ", preferences[winner][loser],
+                 preferences[loser][winner]);
+          temp_pairs[idx].pair.winner = winner;
+          temp_pairs[idx].pair.loser = loser;
+          temp_pairs[idx].strength = strength;
+          temp_pairs[idx].index = idx;
+          int s = temp_pairs[idx].strength;
+          int w = temp_pairs[idx].pair.winner;
+          int l = temp_pairs[idx].pair.loser;
+          printf("%i [%i %i] ", s, w, l);
+        }
+
+        // Sort by strength.
+      }
+    }
+  }
+  printf("\n");
+  printf("temp_pairs::\n");
+  for (int i = 0; i < n; i++) {
+    for (int j = 0; j < n; j++) {
+      int idx = n * i + j;
+      if (idx == temp_pairs[idx].index) {
+        int s = temp_pairs[idx].strength;
+        int w = temp_pairs[idx].pair.winner;
+        int l = temp_pairs[idx].pair.loser;
+        printf("%i [%i %i] ", s, w, l);
       }
     }
   }
