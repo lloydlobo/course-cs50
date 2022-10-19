@@ -268,62 +268,51 @@ c a b  2     | 1 0 1  b
 b a c  3     | 1 3 0  c
 */
 void add_pairs(void) {
-  int length = candidate_count;
-  for (int i = 0; i < length; i++) {
-    for (int j = 0; j < length; j++) {
+  int n = candidate_count;
+  for (int i = 0; i < n; i++) {
+    for (int j = 0; j < n; j++) {
       int pw, pl;
+      int idx = n * i + j;
       pw = preferences[i][j];
       pl = preferences[j][i];
       if (pw == pl) {
-        pairs[i + j].winner = -i;
-        pairs[i + j].loser = -j;
+        pairs[idx].winner = -i;
+        pairs[idx].loser = -j;
       } else if (pw > pl && i != j) {
-        pairs[i + j].winner = i; // i=1;j=0 | winner 0 loser 1.
-        pairs[i + j].loser = j;  // i=2;j=0 | winner 2 loser 0.
+        pairs[idx].winner = i; // i=1;j=0 | winner 0 loser 1.
+        pairs[idx].loser = j;  // i=2;j=0 | winner 2 loser 0.
       } else {
-        pairs[i + j].winner = -100 + i;
-        pairs[i + j].loser = -100 + j;
+        pairs[idx].winner = -100 + i;
+        pairs[idx].loser = -100 + j;
       }
-      printf("[p:%2i p:%2i] ", pairs[i + j].winner, pairs[i + j].loser);
+      printf("[p:%2i p:%2i] ", pairs[n * i + j].winner, pairs[n * i + j].loser);
     }
     printf("\n");
   }
   return;
 }
-
-// result:
-// 0::0 | w: 0 l: 0
-// 0::1 | w: 3 l: 1
-// i::j::0::1 : win: 0 lose: 1
-// 0::2 | w: 3 l: 1
-// i::j::0::2 : win: 0 lose: 2
-// 1::0 | w: 1 l: 3
-// 1::1 | w: 0 l: 0
-// 1::2 | w: 1 l: 3
-// 2::0 | w: 1 l: 3
-// 2::1 | w: 3 l: 1
-// i::j::2::1 : win: 2 lose: 1
-// 2::2 | w: 0 l: 0
-// 0 3 2
-// 2 0 1
-// 3 1 0
-
-// Sort pairs in decreasing order by strength of victory
-//
 // TODO:
-//
+// Sort pairs in decreasing order by strength of victory
+/*  preferences::
+    [w: 0 l: 0] [w: 3 l: 1] [w: 3 l: 1]
+    [w: 1 l: 3] [w: 0 l: 0] [w: 1 l: 3]
+    [w: 1 l: 3] [w: 3 l: 1] [w: 0 l: 0]
+    // pairs:
+    [p: 0 p: 0] [p: 0 p: 1] [p: 0 p: 2]
+    [p:-99 p:-100] [p:-1 p:-1] [p:-99 p:-98]
+    [p:-98 p:-100] [p: 2 p: 1] [p:-2 p:-2] */
 void sort_pairs(void) {
   int n = candidate_count;
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) {
       int winner, loser;
-      winner = pairs[i].winner;
-      loser = pairs[i].loser;
+      int idx = n * i + j;
+      winner = pairs[idx].winner;
+      loser = pairs[idx].loser;
+      // win::0 | los::1 win::0 | los::2 win::2 | los::1
       // Valid pairs.
-      if (winner != loser) {
-        if (winner != 0 && loser != 0) {
-          printf("win::%i | los::%i\n", winner, loser);
-        }
+      if (winner != loser && winner >= 0 && loser >= 0) {
+        printf("win::%i | los::%i\n", winner, loser);
       }
     }
   }
