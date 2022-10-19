@@ -307,7 +307,7 @@ void sort_pairs(void) {
   int pw, pl;
   int n = candidate_count;
   int n_exp = n * (n - 1) / 2;
-  TMP temp_pairs[n_exp];
+  TMP tmp_p[n_exp];
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) {
       int idx = n * i + j;
@@ -318,10 +318,10 @@ void sort_pairs(void) {
         // int strength = preferences[pw][pl] - preferences[pl][pw];
         int strength_voters_count = preferences[pw][pl];
         if (strength_voters_count > 0) { // Allot strength to temp_pairs array.
-          temp_pairs[idx].pair.winner = pw;
-          temp_pairs[idx].pair.loser = pl;
-          temp_pairs[idx].strength = strength_voters_count;
-          temp_pairs[idx].index = idx;
+          tmp_p[idx].pair.winner = pw;
+          tmp_p[idx].pair.loser = pl;
+          tmp_p[idx].strength = strength_voters_count;
+          tmp_p[idx].index = idx;
         }
       }
     }
@@ -332,14 +332,29 @@ void sort_pairs(void) {
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) {
       int idx = n * i + j;
-      int curr = idx;
-      int next = (idx + 1) % n;
-      if (idx == temp_pairs[idx].index) {
-        int s = temp_pairs[idx].strength;
-        int w = temp_pairs[idx].pair.winner;
-        int l = temp_pairs[idx].pair.loser;
-        printf("%i%i ", curr, next);
-        printf("%i [%i %i] ", s, w, l);
+      int cur = idx;
+      int nxt = (idx + 1) % n;
+      TMP tmp_nxt;
+      if (idx == tmp_p[idx].index) {
+        int s_curr = tmp_p[cur].strength;
+        int s_next = tmp_p[nxt].strength;
+        if (s_curr < s_next) {
+          tmp_nxt.strength = tmp_p[nxt].strength;
+          tmp_nxt.pair.winner = tmp_p[nxt].pair.winner;
+          tmp_nxt.pair.loser = tmp_p[nxt].pair.loser;
+
+          tmp_p[cur].strength = tmp_p[nxt].strength;
+          tmp_p[cur].pair.winner = tmp_p[nxt].pair.winner;
+          tmp_p[cur].pair.loser = tmp_p[nxt].pair.loser;
+
+          tmp_p[nxt].strength = tmp_nxt.strength;
+          tmp_p[nxt].pair.winner = tmp_nxt.pair.winner;
+          tmp_p[nxt].pair.loser = tmp_nxt.pair.loser;
+          // Modify pairs.
+          pairs[cur].winner = tmp_p[nxt].pair.winner;
+          pairs[cur].loser = tmp_p[nxt].pair.loser;
+        }
+        printf("%i%i ", cur, nxt);
       }
     }
   }
@@ -350,6 +365,11 @@ void sort_pairs(void) {
 // Lock pairs into the candidate graph in order, without creating cycles
 void lock_pairs(void) {
   // TODO
+  printf("pairs::\n");
+  for (int i = 0; i < pair_count; i++) {
+    printf("[%i %i] ", pairs[i].winner, pairs[i].loser);
+  }
+  printf("\n");
   for (int i = 0; i < pair_count; i++) {
     for (int j = 0; j < pair_count; j++) {
       int idx = pair_count * i + j;
