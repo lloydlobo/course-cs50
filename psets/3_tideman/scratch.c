@@ -403,8 +403,6 @@ void print_winner(void) {
       }
     }
     printf("WINNER::%i\n", S[i].id);
-    // int curr = W[i].tally;
-    // int next = W[(i + 1 % candidate_count)].tally;
   }
 
   return;
