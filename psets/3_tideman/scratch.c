@@ -233,6 +233,8 @@ void record_preferences(int ranks[]) {
 
 // Record pairs of candidates where one is preferred over the other
 //
+// pair pairs[MAX * (MAX - 1) / 2];
+//
 // Add each pair of candidates to pairs array,
 // if one candidate is prefered over the other.
 // Update global variable pair_count to be,
@@ -240,33 +242,20 @@ void record_preferences(int ranks[]) {
 //
 // # Example
 //
-// - preferences:
-// ~ | 0 1 2
-// ~~~~~~~~~~
-// 0 | 0 3 1
-// 1 | 1 0 2
+// - preferences: - result:            - rank:  voter | preferences:
+// ~ | 0 1 2      winner 0 | winner 2    a c b  0     | a b c  ~
+// ~~~~~~~~~~     loser  1 | loser  0    a c b  1     | 0 3 3  a
+// 0 | 0 3 1                             c a b  2     | 1 0 1  b
+// 1 | 1 0 2                             b a c  3     | 1 3 0  c
 // 2 | 3 2 0
-// - result:
-// winner 0 | winner 2
-// loser  1 | loser  0
-//
-// pair pairs[MAX * (MAX - 1) / 2];
 //
 // # Pseudocode
 //
 // Scan preferences 2D array (p[][]). best of n-1 cases.
-// Scan candidate 0.
 // if p[0][j] i.e. cand-0 has 3 wins over cand-1 and 1 over cand-2.
 // repeat for all 3 rows. p[i][j]. 0->i->3
 // if p[0][1] > p[1][0] if p[i][j] > p[j][i] . Winner 0 to 1.
 // if p[2][0] > p[0][2] if p[i][j] > p[j][i] . Winner 2 to 0.
-/*
-rank:  voter | preferences:
-a c b  0     | a b c  ~
-a c b  1     | 0 3 3  a
-c a b  2     | 1 0 1  b
-b a c  3     | 1 3 0  c
-*/
 void add_pairs(void) {
   int n = candidate_count;
   for (int i = 0; i < n; i++) {
@@ -283,20 +272,7 @@ void add_pairs(void) {
   return;
 }
 // TODO:
-/*  preferences::
-    [w: 0 l: 0] [w: 3 l: 1] [w: 3 l: 1]
-    [w: 1 l: 3] [w: 0 l: 0] [w: 1 l: 3]
-    [w: 1 l: 3] [w: 3 l: 1] [w: 0 l: 0]
-    // pairs:
-    [p: 0 p: 0] [p: 0 p: 1] [p: 0 p: 2]
-    [p:-99 p:-100] [p:-1 p:-1] [p:-99 p:-98]
-    [p:-98 p:-100] [p: 2 p: 1] [p:-2 p:-2] */
 
-typedef struct {
-  pair pair;
-  int strength;
-  int index;
-} TMP;
 // Sort pairs in decreasing order by strength of victory
 //
 // The function should sort the pairs array in decreasing order of strength of
@@ -307,6 +283,11 @@ void sort_pairs(void) {
   int pw, pl;
   int n = candidate_count;
   int n_exp = n * (n - 1) / 2;
+  typedef struct {
+    pair pair;
+    int strength;
+    int index;
+  } TMP;
   TMP tmp_p[n_exp];
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) {
@@ -332,9 +313,10 @@ void sort_pairs(void) {
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) {
       int idx = n * i + j;
-      int cur = idx;
-      int nxt = (idx + 1) % n;
+      int cur, nxt;
       TMP tmp_nxt;
+      cur = idx;
+      nxt = (cur + 1) % n;
       if (idx == tmp_p[idx].index) {
         int s_curr = tmp_p[cur].strength;
         int s_next = tmp_p[nxt].strength;
@@ -364,31 +346,67 @@ void sort_pairs(void) {
 
 // Lock pairs into the candidate graph in order, without creating cycles
 void lock_pairs(void) {
-  // TODO
-  printf("pairs::\n");
-  for (int i = 0; i < pair_count; i++) {
-    printf("[%i %i] ", pairs[i].winner, pairs[i].loser);
-  }
-  printf("\n");
   for (int i = 0; i < pair_count; i++) {
     for (int j = 0; j < pair_count; j++) {
       int idx = pair_count * i + j;
       int pi = pairs[idx].winner;
       int pj = pairs[idx].loser;
-      if (pi >= 0 && pj >= 0) {
+      if (pi + pj > 0) {
         locked[pi][pj] = true;
-        printf("%i", locked[i][j]);
       }
     }
-    printf("\n");
   }
-
   return;
 }
 
+// TODO:
 // Print the winner of the election
 void print_winner(void) {
-  // TODO
+  typedef struct {
+    int id;
+    int tally;
+  } Winner;
+  Winner W[candidate_count];
+  for (int i = 0; i < candidate_count; i++) {
+    W[i].id = i;
+    W[i].tally = 0;
+    for (int j = 0; j < candidate_count; j++) {
+      int is_true = locked[i][j];
+      if (is_true == 1) {
+        W[i].tally += 1;
+      } // printf("%i ", locked[i][j]);
+    }
+  }
+  typedef struct {
+    int id;
+    int value;
+  } SORT;
+  SORT S[candidate_count];
+  for (int i = 0; i < candidate_count - 1; i++) {
+    for (int j = i + 1; j < candidate_count; j++) {
+      int cur = i;
+      int nxt = j % candidate_count;
+      S[cur].id = cur;
+      S[nxt].id = nxt;
+      S[cur].value = W[cur].tally;
+      S[nxt].value = W[nxt].tally;
+      int vcur = S[cur].value;
+      int vnxt = S[nxt].value;
+      SORT tmp;
+      if (vcur < vnxt) {
+        tmp.value = S[cur].value;
+        tmp.id = S[cur].id;
+        S[cur].value = S[nxt].value;
+        S[cur].id = S[nxt].id;
+        S[nxt].value = tmp.value;
+        S[nxt].id = tmp.id;
+      }
+    }
+    printf("WINNER::%i\n", S[i].id);
+    // int curr = W[i].tally;
+    // int next = W[(i + 1 % candidate_count)].tally;
+  }
+
   return;
 }
 
