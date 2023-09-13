@@ -7,47 +7,42 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
+#define WAV_HEADER_SIZE 44 // for standard PCM WAV file headers
 
-const size_t HEADER_PCM_WAV_SIZE = 44;
+#define USAGE_MESSAGE "Usage: ./volume input.wav output.wav factor\n"
 
 int main(int argc, char *argv[]) {
   if (argc != 4) {
-    perror("Usage: ./volume input.wav output.wav factor\n");
+    fprintf(stderr, USAGE_MESSAGE);
     return 1;
   }
 
   FILE *input = fopen(argv[1], "r");
   if (input == NULL) {
-    perror("Could not open file.\n");
+    perror("Could not open input file.\n");
     return 1;
   }
 
   FILE *output = fopen(argv[2], "w");
   if (output == NULL) {
-    perror("Could not open file.\n");
+    perror("Could not open output file.\n");
     return 1;
   }
 
   float scaling_factor = atof(argv[3]);
 
-  fseek(input, 0, SEEK_END);
-  long input_size = ftell(input); // 352844 (353k)
-  rewind(input);
-
-  uint8_t header[HEADER_PCM_WAV_SIZE];
-
-  size_t ret = fread(header, sizeof(uint8_t), ARRAY_SIZE(header), input);
-  if (ret != HEADER_PCM_WAV_SIZE) {
-    perror("Failed to read header af WAV file");
+  // Read and write the header
+  uint8_t header[WAV_HEADER_SIZE];
+  if (fread(header, sizeof(uint8_t), WAV_HEADER_SIZE, input) !=
+      WAV_HEADER_SIZE) {
+    perror("Failed to read header of WAV file");
     fclose(input);
     fclose(output);
     return 1;
   }
+  fwrite(&header, sizeof(uint8_t), WAV_HEADER_SIZE, output);
 
-  fwrite(&header, sizeof(uint8_t), ARRAY_SIZE(header), output);
-
-  // Treat each sample of audio in a WAV file as an int16_t value.
+  // Process each audio sample in the WAV file as an int16_t value
   int16_t buffer;
   while (fread(&buffer, sizeof(int16_t), 1, input) == 1) {
     buffer = (int16_t)(buffer * scaling_factor);
@@ -57,6 +52,8 @@ int main(int argc, char *argv[]) {
   // Close files
   fclose(input);
   fclose(output);
+
+  return 0;
 }
 
 /*
@@ -93,3 +90,8 @@ int main(int argc, char *argv[]) {
 ==96862== For lists of detected and suppressed errors, rerun with: -s
 ==96862== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
 */
+
+// #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
+// fseek(input, 0, SEEK_END);
+// long input_size = ftell(input); // 352844 (353k)
+// rewind(input);
