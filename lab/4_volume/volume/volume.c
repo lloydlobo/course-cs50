@@ -9,6 +9,8 @@
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 
+const size_t HEADER_PCM_WAV_SIZE = 44;
+
 int main(int argc, char *argv[]) {
   if (argc != 4) {
     printf("Usage: ./volume input.wav output.wav factor\n");
@@ -35,12 +37,11 @@ int main(int argc, char *argv[]) {
   long input_size = ftell(input); // 352844 (353k)
   rewind(input);
 
-  size_t HEADER_PCM_WAV_SIZE = 48;
   uint8_t header[HEADER_PCM_WAV_SIZE];
 
   size_t ret = fread(header, sizeof(uint8_t), ARRAY_SIZE(header), input);
   if (ret != HEADER_PCM_WAV_SIZE) {
-    perror("Failed to read the entire file");
+    perror("Failed to read header af WAV file");
     fclose(input);
     fclose(output);
     return 1;
@@ -51,6 +52,7 @@ int main(int argc, char *argv[]) {
   // DONE: Read samples from input file and write updated data to output file
 
   int16_t buffer;
+  // treat each sample of audio in a WAV file as an int16_t value.
   while (fread(&buffer, sizeof(int16_t), 1, input) == 1) {
     buffer = (int16_t)(buffer * scaling_factor);
     fwrite(&buffer, sizeof(int16_t), 1, output);
@@ -60,6 +62,41 @@ int main(int argc, char *argv[]) {
   fclose(input);
   fclose(output);
 }
+
+/*
+ * PERF: Your program, if it uses malloc, must not leak any memory.
+ *
+ * int16_t buffer = (int16_t)malloc(input_size - ARRAY_SIZE(header));
+ * size_t ret = fread(buffer, sizeof(int16_t), ARRAY_SIZE(buffer), input);
+ * // ... handle error
+ *
+ * for (size_t i = 0; i < ARRAY_SIZE(buffer); i++) {
+ *    int16_t sample = buffer[i];
+ *    buffer[i] = (sample * scaling_factor);
+ * }
+ * fwrite(&buffer, sizeof(uint8_t), ARRAY_SIZE(buffer), output);
+ *
+ * free(buffer)
+ *
+ * // ... close files
+ */
+
+/*
+ WAV Files
+
+ WAV files are a common file format for representing audio. WAV files store
+ audio as a sequence of “samples”: numbers that represent the value of some
+ audio signal at a particular point in time. WAV files begin with a 44-byte
+ “header” that contains information about the file itself, including the size of
+ the file, the number of samples per second, and the size of each sample. After
+ the header, the WAV file contains a sequence of samples, each a single 2-byte
+ (16-bit) integer representing the audio signal at a particular point in time.
+
+ Scaling each sample value by a given factor has the effect of changing the
+ volume of the audio. Multiplying each sample value by 2.0, for example, will
+ have the effect of doubling the volume of the origin audio. Multiplying each
+ sample by 0.5, meanwhile, will have the effect of cutting the volume in half.
+ */
 
 /*
  * 11:47am zsh $ valgrind ./volume input.wav output.wav 3.00
