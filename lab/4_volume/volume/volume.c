@@ -13,7 +13,7 @@ const size_t HEADER_PCM_WAV_SIZE = 44;
 
 int main(int argc, char *argv[]) {
   if (argc != 4) {
-    printf("Usage: ./volume input.wav output.wav factor\n");
+    perror("Usage: ./volume input.wav output.wav factor\n");
     return 1;
   }
 
@@ -31,8 +31,6 @@ int main(int argc, char *argv[]) {
 
   float scaling_factor = atof(argv[3]);
 
-  // DONE: Copy header from input file to output file
-
   fseek(input, 0, SEEK_END);
   long input_size = ftell(input); // 352844 (353k)
   rewind(input);
@@ -49,10 +47,8 @@ int main(int argc, char *argv[]) {
 
   fwrite(&header, sizeof(uint8_t), ARRAY_SIZE(header), output);
 
-  // DONE: Read samples from input file and write updated data to output file
-
+  // Treat each sample of audio in a WAV file as an int16_t value.
   int16_t buffer;
-  // treat each sample of audio in a WAV file as an int16_t value.
   while (fread(&buffer, sizeof(int16_t), 1, input) == 1) {
     buffer = (int16_t)(buffer * scaling_factor);
     fwrite(&buffer, sizeof(int16_t), 1, output);
@@ -62,24 +58,6 @@ int main(int argc, char *argv[]) {
   fclose(input);
   fclose(output);
 }
-
-/*
- * PERF: Your program, if it uses malloc, must not leak any memory.
- *
- * int16_t buffer = (int16_t)malloc(input_size - ARRAY_SIZE(header));
- * size_t ret = fread(buffer, sizeof(int16_t), ARRAY_SIZE(buffer), input);
- * // ... handle error
- *
- * for (size_t i = 0; i < ARRAY_SIZE(buffer); i++) {
- *    int16_t sample = buffer[i];
- *    buffer[i] = (sample * scaling_factor);
- * }
- * fwrite(&buffer, sizeof(uint8_t), ARRAY_SIZE(buffer), output);
- *
- * free(buffer)
- *
- * // ... close files
- */
 
 /*
  WAV Files
@@ -99,21 +77,19 @@ int main(int argc, char *argv[]) {
  */
 
 /*
- * 11:47am zsh $ valgrind ./volume input.wav output.wav 3.00
- *
- * ==1706756== Memcheck, a memory error detector
- * ==1706756== Copyright (C) 2002-2022, and GNU GPL'd, by Julian Seward et al.
- * ==1706756== Using Valgrind-3.21.0 and LibVEX; rerun with -h for copyright
- * info
- * ==1706756== Command: ./volume input.wav output.wav 3.00
- * ==1706756==
- *
- * ==1706756== HEAP SUMMARY:
- * ==1706756==     in use at exit: 0 bytes in 0 blocks
- * ==1706756==   total heap usage: 5 allocs, 5 frees, 10,160 bytes allocated
- * ==1706756==
- * ==1706756== All heap blocks were freed -- no leaks are possible
- * ==1706756==
- * ==1706756== For lists of detected and suppressed errors, rerun with: -s
- * ==1706756== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
- */
+04:15pm zsh $ valgrind ./volume input.wav output.wav 3.0
+==96862== Memcheck, a memory error detector
+==96862== Copyright (C) 2002-2022, and GNU GPL'd, by Julian Seward et al.
+==96862== Using Valgrind-3.21.0 and LibVEX; rerun with -h for copyright info
+==96862== Command: ./volume input.wav output.wav 3.0
+==96862==
+==96862==
+==96862== HEAP SUMMARY:
+==96862==     in use at exit: 0 bytes in 0 blocks
+==96862==   total heap usage: 4 allocs, 4 frees, 9,136 bytes allocated
+==96862==
+==96862== All heap blocks were freed -- no leaks are possible
+==96862==
+==96862== For lists of detected and suppressed errors, rerun with: -s
+==96862== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+*/
