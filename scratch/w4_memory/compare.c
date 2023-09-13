@@ -2,13 +2,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #define MAX 10
 
 void get_int();
 void get_string();
 int main(int argc, char *argv[]) {
   get_int();
+  // FIXME: segfaults.
   get_string();
+
   return 0;
 }
 
@@ -22,8 +25,10 @@ void get_string() { // strings with '\0' when using cs50 lib.h
   char *s[MAX], *t[MAX];
   printf("s: ");
   scanf("%s", *s);
+
   printf("t: ");
   scanf("%s", *t);
+
   // 0 if same, +1 before other, -1 if opposite is true.
   if (strcmp(*s, *t) == 0) {
     printf("Same\n");

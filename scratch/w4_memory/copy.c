@@ -5,6 +5,14 @@
 #define MAX 10
 
 void memory_limitation();
+// NULL is by convention pointed to the zeroth byte position in memory grid, and
+// isnt assigned
+//
+// If `/0` nul is not added to end of a string, the computer will keep on
+// `printing` till a 0 byte is luckily found.
+//
+// strlen(string_s) + 1. use 1 additionally as index for copying the original
+// strings nul char OR just assign nul char to newly copied string_t.
 
 // RESOLVED BY DYNAMIC MEMORY ALLOCATION.
 // 1:26:09
@@ -16,25 +24,31 @@ int main(int argc, char *argv[]) {
   char *s;
   printf("s: ");
   scanf("%s", s);
+
   // Allocate len s + nul character length.
   // Going to need the nul character.
   // stdlib has malloc & free. BUT sometimes malloc can fail.
   char *t = malloc(strlen(s) + 1); // HI! 4bytes. H,I,!,\0
+  //
   // Avoid using NUL especially for pointers.
   if (t == NULL) { // NULL is 0 but in context of pointers.
     printf("error: t is NULL : %s\n", t);
     return 1; // edge case if malloc fails.
   }
+
   // copy without s[0] address.
   strcpy(t, s);        // dest,src.
-  if (strlen(t) > 0) { // optimize safe code.
+  if (strlen(t) > 0) { // optimize safe code, if user enters nothing.
     t[0] = toupper(t[0]);
   }
+
   // s: dd t: ss 0x7f3c657e2ab0 s: dd 0x12836c0 t: dd
   printf("%p s: %s\n", s, s); // Modifies s!!!!. So modifies s[0] address.
   printf("%p t: %s\n", t, t);
+
   // Keep malloc and free in concert.
-  free(t);  // free t when done with t. don't need to do with cs50 lib.
+  free(t); // free t when done with t. don't need to do with cs50 lib.
+
   return 0; // Success.
 }
 
