@@ -23,7 +23,6 @@ void grayscale(int height, int width, RGBTRIPLE image[height][width])
 /* reverse:     reverse array `arr` in place */
 void reverse(char* arr, int n_arr)
 {
-    // int n_arr = sizeof(arr) / sizeof(char*);
     int temp, i, j;
     for (i = 0, j = n_arr; i < j; i++, j--) {
         temp = arr[i];
@@ -32,19 +31,40 @@ void reverse(char* arr, int n_arr)
     }
 }
 
+/* swap_pixels:    swap two RGBTRIPLE values */
+void swap_pixels(RGBTRIPLE* px1, RGBTRIPLE* px2)
+{
+    RGBTRIPLE temp = *px1;
+    *px1 = *px2;
+    *px2 = temp;
+}
+
+/* swap_row_pixels:      Function to swap left and right pixels in a row for reflection */
+void swap_row_pixels(RGBTRIPLE row[], int width)
+{
+    for (int x = 0; x < width / 2; x++) {
+        RGBTRIPLE temp = row[x];
+        row[x] = row[width - x - 1];
+        row[width - x - 1] = temp;
+    }
+}
+
 // Reflect image horizontally as mirror image
 void reflect(int height, int width, RGBTRIPLE image[height][width])
 {
     for (int y = 0; y < height; y++) {
-        RGBTRIPLE temp_row[width];
-        // Copy the original row into the temporary buffer, reversed
-        for (int x = 0; x < width; x++) {
-            temp_row[x] = image[y][width - x - 1];
-        }
-        // Copy the reflected row back into the original image
-        for (int x = 0; x < width; x++) {
-            image[y][x] = temp_row[x];
-        }
+        // >> most declarative, bug prone.
+        swap_row_pixels(image[y], width);
+
+        // OR >> for utility abstraction
+        // for (int x = 0; x < width / 2; x++) {
+        //     swap_pixels(&image[y][x], &image[y][width - x - 1]);
+        //
+        //     // OR >> most readable
+        //     // RGBTRIPLE temp = image[y][x];
+        //     // image[y][x] = image[y][width - x - 1];
+        //     // image[y][width - x - 1] = temp;
+        // }
     }
 }
 
