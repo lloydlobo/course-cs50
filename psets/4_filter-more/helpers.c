@@ -78,6 +78,15 @@ void reflect(int height, int width, RGBTRIPLE image[height][width])
         // }
     }
 }
+void copyImage(int height, int width, RGBTRIPLE source[height][width], RGBTRIPLE destination[height][width])
+{
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            // Copy pixel values from source to destination
+            destination[y][x] = source[y][x];
+        }
+    }
+}
 
 // Blur image
 /*
@@ -124,16 +133,19 @@ void blur(int height, int width, RGBTRIPLE image[height][width])
     assert(count_offset == sizeof(offset_y) / sizeof(int));
     int count_all = count_offset + 1; // +1 -> current pixel
 
-    /* Allocate NMEMB elements of SIZE bytes each, all initialized to 0.  */
-    // Allocate memory for image
-    RGBTRIPLE* image_copy = calloc(height, width * sizeof(RGBTRIPLE));
-    if (image_copy == NULL) {
-        printf("Not enough memory to store copy of image.\n");
-    }
+    RGBTRIPLE image_buffer[height][width];
+    copyImage(height, width, image, image_buffer);
+
+    // Allocate NMEMB elements of SIZE bytes each, all initialized to 0
+    // RGBTRIPLE* image_buffer = calloc(height, width * sizeof(RGBTRIPLE));
+    // if (image_buffer == NULL) {
+    //     perror("Not enough memory to store buffer for size of image.\n");
+    //     return;
+    // }
 
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
-            RGBTRIPLE* pixel = &image[y][x];
+            RGBTRIPLE* pixel = &image_buffer[y][x];
             int sum_red = pixel->rgbtRed, sum_green = pixel->rgbtGreen, sum_blue = pixel->rgbtBlue;
 
             for (int i = 0; i < count_offset; i++) {
@@ -148,16 +160,38 @@ void blur(int height, int width, RGBTRIPLE image[height][width])
                 }
             }
 
-            // FIXME: Destructive blurring: use reference buffer to mutate,
-            //     so, surrounding pixels can work with original pixel state
+            // FIXME: Destructive blurring: use reference buffer to mutate
+            // , surrounding pixels can work with original pixel state
+            //
+            // FIXME: round any floating-point numbers to the nearest
+            // integer before assigning them to a pixel value!
             pixel->rgbtRed = sum_red / count_all;
             pixel->rgbtGreen = sum_green / count_all;
             pixel->rgbtBlue = sum_blue / count_all;
         }
     }
 
+    copyImage(height, width, image_buffer, image);
+    // free(image_buffer);
+
     return;
 }
+
+/*12:25pm zsh $ valgrind ./filter -b images/courtyard.bmp out/courtyard_blur.bmp
+==536628== Memcheck, a memory error detector
+==536628== Copyright (C) 2002-2022, and GNU GPL'd, by Julian Seward et al.
+==536628== Using Valgrind-3.21.0 and LibVEX; rerun with -h for copyright info
+==536628== Command: ./filter -b images/courtyard.bmp out/courtyard_blur.bmp
+==536628==
+==536628==
+==536628== HEAP SUMMARY:
+==536628==     in use at exit: 0 bytes in 0 blocks
+==536628==   total heap usage: 5 allocs, 5 frees, 729,136 bytes allocated
+==536628==
+==536628== All heap blocks were freed -- no leaks are possible
+==536628==
+==536628== For lists of detected and suppressed errors, rerun with: -s
+==536628== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)*/
 
 /* 11:35am zsh $ valgrind ./filter -b images/courtyard.bmp out/courtyard_blur.bmp
 ==458644== Memcheck, a memory error detector
