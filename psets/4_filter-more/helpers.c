@@ -88,122 +88,82 @@ void copyImage(int height, int width, RGBTRIPLE source[height][width], RGBTRIPLE
     }
 }
 
-// Blur image
+// Offset
+//
+// Usage: 3x3 Box
+// Scan each 3x3 Box, where center pixel is averaged with sum of surrounding pixel value.
+//
+// Offset offsets[] = {
+//     { -1, -1 }, { 0, -1 }, { 1, -1 },
+//     { -1, 0 }, /*{ 0, 0 },*/ { 1, 0 },
+//     { -1, 1 }, { 0, 1 }, { 1, 1 }
+// };
+typedef struct {
+    int dx;
+    int dy;
+} Offset;
+
 /*
-There are a number of ways to create the effect of blurring or softening an image. For this problem, we’ll use the “box
-blur,” which works by taking each pixel and, for each color value, giving it a new value by averaging the color values
-of neighboring pixels.
-
-01 02 03 04
-05 06 07 08
-09 10 11 12
-13 14 15 16
-
-Scan each 3x3 Box, where center pixel is averaged with sum of surrounding pixel value.
-TODO: Create a temp buffer to collect values, before mutating image?
-
-BYTE x = image[y][x]
-if not edge_pixel(x,y):
-    x += image[y-2][x+1]
-    x += image[y-1][x-1]
-    x += image[y+1][x+1]
-    x += image[y+1][x-1]
-    x += image[y][x+1]
-    x += image[y][x-1]
-    x /= 8 // Average
-else:
-    todo()
-
-The new value of each pixel would be the average of the values of all of the pixels that are within 1 row and column of
-the original pixel (forming a 3x3 box). For example, each of the color values for pixel 6 would be obtained by averaging
-the original color values of pixels 1, 2, 3, 5, 6, 7, 9, 10, and 11 (note that pixel 6 itself is included in the
-average). Likewise, the color values for pixel 11 would be be obtained by averaging the color values of pixels 6, 7, 8,
-10, 11, 12, 14, 15 and 16.
-
-For a pixel along the edge or corner, like pixel 15, we would still look for all pixels within 1 row and column: in this
-case, pixels 10, 11, 12, 14, 15, and 16. */
-// -1+1 +0+1 +1+1
-// -1+0 +0+0 +1+0
-// -1-1 +1+0 +1-1
+ * Blur image
+ *
+ * The new value of each pixel would be the average of the values of all
+ * of the pixels that are within 1 row and column of the original pixel
+ * (forming a 3x3 box). For a pixel along the edge or corner, we would
+ * still look for all pixels within 1 row and column.
+ */
 void blur(int height, int width, RGBTRIPLE image[height][width])
 {
-    int offset_x[] = { -1, 0, 1, -1, 1, -1, 1, 1 };
-    int offset_y[] = { 1, 1, 1, 0, 0, -1, -1, -1 };
-    size_t count_offset = sizeof(offset_x) / sizeof(int);
-    assert(count_offset == sizeof(offset_y) / sizeof(int));
+    Offset offsets[]
+        = { { -1, -1 },
+            { 0, -1 },
+            { 1, -1 },
+            { -1, 0 },
+            // { 0, 0 },
+            { 1, 0 },
+            { -1, 1 },
+            { 0, 1 },
+            { 1, 1 } };
+    size_t count_offsets = sizeof(offsets) / sizeof(Offset);
+    assert(count_offsets == 8); // 8+1; if origin(`{ 0, 0 }`) is enabled in offsets[]
 
-    RGBTRIPLE image_buffer[height][width];
-    copyImage(height, width, image, image_buffer);
+    RGBTRIPLE buffer_image[height][width];
 
-    // Allocate NMEMB elements of SIZE bytes each, all initialized to 0
-    // RGBTRIPLE* image_buffer = calloc(height, width * sizeof(RGBTRIPLE));
-    // if (image_buffer == NULL) {
-    //     perror("Not enough memory to store buffer for size of image.\n");
-    //     return;
-    // }
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
-            RGBTRIPLE* pixel = &image_buffer[y][x];
-            int count_visited = 0;
-            int sum_red = pixel->rgbtRed, sum_green = pixel->rgbtGreen, sum_blue = pixel->rgbtBlue;
-            count_visited++;
+            RGBTRIPLE* pixel = &image[y][x];
+            int sum_red = pixel->rgbtRed, sum_green = pixel->rgbtGreen,
+                sum_blue = pixel->rgbtBlue; // 0,0,0 if origin(`{ 0, 0 }`) is enabled in offsets[]
+            int count_visited = 1; // 0 if origin(`{ 0, 0 }`) is enabled in offsets[]
 
-            for (int i = 0; i < count_offset; i++) {
-                int idx_nx = x + offset_x[i];
-                int idx_ny = y + offset_y[i];
+            for (int i = 0; i < count_offsets; i++) {
+                int idx_nx = x + offsets[i].dx, idx_ny = y + offsets[i].dy;
 
-                if (idx_nx >= 0 && idx_nx < width && idx_ny >= 0 && idx_ny < height) {
-                    RGBTRIPLE rgbt = (image[idx_ny][idx_nx]);
-                    sum_red += rgbt.rgbtRed;
-                    sum_green += rgbt.rgbtGreen;
-                    sum_blue += rgbt.rgbtBlue;
-                    count_visited++;
+                if (!(idx_nx >= 0 && idx_nx < width && idx_ny >= 0 && idx_ny < height)) {
+                    continue;
                 }
+
+                RGBTRIPLE rgbt = (image[idx_ny][idx_nx]);
+                sum_red += rgbt.rgbtRed;
+                sum_green += rgbt.rgbtGreen;
+                sum_blue += rgbt.rgbtBlue;
+                count_visited++;
             }
-            pixel->rgbtRed = round((float)sum_red / count_visited);
-            pixel->rgbtGreen = round((float)sum_green / count_visited);
-            pixel->rgbtBlue = round((float)sum_blue / count_visited);
+
+            RGBTRIPLE* buffer_pixel = &buffer_image[y][x];
+            buffer_pixel->rgbtRed = round((float)sum_red / count_visited);
+            buffer_pixel->rgbtGreen = round((float)sum_green / count_visited);
+            buffer_pixel->rgbtBlue = round((float)sum_blue / count_visited);
         }
     }
-    copyImage(height, width, image_buffer, image);
-    // free(image_buffer);
+
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            image[y][x] = buffer_image[y][x];
+        }
+    }
 
     return;
 }
-
-/*12:25pm zsh $ valgrind ./filter -b images/courtyard.bmp out/courtyard_blur.bmp
-==536628== Memcheck, a memory error detector
-==536628== Copyright (C) 2002-2022, and GNU GPL'd, by Julian Seward et al.
-==536628== Using Valgrind-3.21.0 and LibVEX; rerun with -h for copyright info
-==536628== Command: ./filter -b images/courtyard.bmp out/courtyard_blur.bmp
-==536628==
-==536628==
-==536628== HEAP SUMMARY:
-==536628==     in use at exit: 0 bytes in 0 blocks
-==536628==   total heap usage: 5 allocs, 5 frees, 729,136 bytes allocated
-==536628==
-==536628== All heap blocks were freed -- no leaks are possible
-==536628==
-==536628== For lists of detected and suppressed errors, rerun with: -s
-==536628== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)*/
-
-/* 11:35am zsh $ valgrind ./filter -b images/courtyard.bmp out/courtyard_blur.bmp
-==458644== Memcheck, a memory error detector
-==458644== Copyright (C) 2002-2022, and GNU GPL'd, by Julian Seward et al.
-==458644== Using Valgrind-3.21.0 and LibVEX; rerun with -h for copyright info
-==458644== Command: ./filter -b images/courtyard.bmp out/courtyard_blur.bmp
-==458644==
--1  0  1 -1  1 -1  1  1
- 1  1  1  0  0 -1 -1 -1
-==458644==
-==458644== HEAP SUMMARY:
-==458644==     in use at exit: 0 bytes in 0 blocks
-==458644==   total heap usage: 6 allocs, 6 frees, 730,160 bytes allocated
-==458644==
-==458644== All heap blocks were freed -- no leaks are possible
-==458644==
-==458644== For lists of detected and suppressed errors, rerun with: -s
-==458644== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0) */
 
 // Detect edges
 void edges(int height, int width, RGBTRIPLE image[height][width])
