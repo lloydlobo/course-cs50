@@ -1,7 +1,10 @@
 #include "helpers.h"
+#include <assert.h>
 #include <math.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 // Convert image to grayscale
 void grayscale(int height, int width, RGBTRIPLE image[height][width])
@@ -69,6 +72,14 @@ void reflect(int height, int width, RGBTRIPLE image[height][width])
 }
 
 // Blur image
+//
+void print_array(int array[], int size)
+{
+    for (int i = 0; i < size; i++) {
+        printf("%2d ", array[i]);
+    }
+    printf("\n");
+}
 /*
 There are a number of ways to create the effect of blurring or softening an image. For this problem, we’ll use the “box
 blur,” which works by taking each pixel and, for each color value, giving it a new value by averaging the color values
@@ -102,21 +113,64 @@ average). Likewise, the color values for pixel 11 would be be obtained by averag
 
 For a pixel along the edge or corner, like pixel 15, we would still look for all pixels within 1 row and column: in this
 case, pixels 10, 11, 12, 14, 15, and 16. */
+// -1+1 +0+1 +1+1
+// -1+0 +0+0 +1+0
+// -1-1 +1+0 +1-1
 void blur(int height, int width, RGBTRIPLE image[height][width])
 {
+    int offset_x[] = { -1, 0, 1, -1, 1, -1, 1, 1 };
+    int offset_y[] = { 1, 1, 1, 0, 0, -1, -1, -1 };
+
+    size_t count_offset = sizeof(offset_x) / sizeof(int);
+    assert(count_offset == sizeof(offset_y) / sizeof(int));
+
+    print_array(offset_x, count_offset);
+    print_array(offset_y, count_offset);
+
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
-            // typedef uint8_t BYTE;
-            BYTE avg_rgb = (image[y][x].rgbtRed + image[y][x].rgbtGreen + image[y][x].rgbtBlue) / 3;
+            RGBTRIPLE* pixel = &image[y][x];
+            int sum_red = pixel->rgbtRed, sum_green = pixel->rgbtGreen, sum_blue = pixel->rgbtBlue;
 
-            // Assign the average value to all components
-            image[y][x].rgbtRed = avg_rgb;
-            image[y][x].rgbtGreen = avg_rgb;
-            image[y][x].rgbtBlue = avg_rgb;
+            for (int i = 0; i < count_offset; i++) {
+                int idx_nx = x + offset_x[i];
+                int idx_ny = y + offset_y[i];
+
+                if (idx_nx >= 0 && idx_nx < width && idx_ny >= 0 && idx_ny < height) {
+                    RGBTRIPLE rgbt = (image[idx_ny][idx_nx]);
+                    sum_red += rgbt.rgbtRed;
+                    sum_green += rgbt.rgbtGreen;
+                    sum_blue += rgbt.rgbtBlue;
+                }
+            }
+
+            int count_all = count_offset + 1; // +1 -> current pixel
+            pixel->rgbtRed = sum_red / count_all;
+            pixel->rgbtGreen = sum_green / count_all;
+            pixel->rgbtBlue = sum_blue / count_all;
         }
     }
+
     return;
 }
+
+/* 11:35am zsh $ valgrind ./filter -b images/courtyard.bmp out/courtyard_blur.bmp
+==458644== Memcheck, a memory error detector
+==458644== Copyright (C) 2002-2022, and GNU GPL'd, by Julian Seward et al.
+==458644== Using Valgrind-3.21.0 and LibVEX; rerun with -h for copyright info
+==458644== Command: ./filter -b images/courtyard.bmp out/courtyard_blur.bmp
+==458644==
+-1  0  1 -1  1 -1  1  1
+ 1  1  1  0  0 -1 -1 -1
+==458644==
+==458644== HEAP SUMMARY:
+==458644==     in use at exit: 0 bytes in 0 blocks
+==458644==   total heap usage: 6 allocs, 6 frees, 730,160 bytes allocated
+==458644==
+==458644== All heap blocks were freed -- no leaks are possible
+==458644==
+==458644== For lists of detected and suppressed errors, rerun with: -s
+==458644== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0) */
 
 // Detect edges
 void edges(int height, int width, RGBTRIPLE image[height][width])
