@@ -131,7 +131,6 @@ void blur(int height, int width, RGBTRIPLE image[height][width])
     int offset_y[] = { 1, 1, 1, 0, 0, -1, -1, -1 };
     size_t count_offset = sizeof(offset_x) / sizeof(int);
     assert(count_offset == sizeof(offset_y) / sizeof(int));
-    int count_all = count_offset + 1; // +1 -> current pixel
 
     RGBTRIPLE image_buffer[height][width];
     copyImage(height, width, image, image_buffer);
@@ -142,11 +141,12 @@ void blur(int height, int width, RGBTRIPLE image[height][width])
     //     perror("Not enough memory to store buffer for size of image.\n");
     //     return;
     // }
-
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
             RGBTRIPLE* pixel = &image_buffer[y][x];
+            int count_visited = 0;
             int sum_red = pixel->rgbtRed, sum_green = pixel->rgbtGreen, sum_blue = pixel->rgbtBlue;
+            count_visited++;
 
             for (int i = 0; i < count_offset; i++) {
                 int idx_nx = x + offset_x[i];
@@ -157,20 +157,14 @@ void blur(int height, int width, RGBTRIPLE image[height][width])
                     sum_red += rgbt.rgbtRed;
                     sum_green += rgbt.rgbtGreen;
                     sum_blue += rgbt.rgbtBlue;
+                    count_visited++;
                 }
             }
-
-            // FIXME: Destructive blurring: use reference buffer to mutate
-            // , surrounding pixels can work with original pixel state
-            //
-            // FIXME: round any floating-point numbers to the nearest
-            // integer before assigning them to a pixel value!
-            pixel->rgbtRed = sum_red / count_all;
-            pixel->rgbtGreen = sum_green / count_all;
-            pixel->rgbtBlue = sum_blue / count_all;
+            pixel->rgbtRed = round((float)sum_red / count_visited);
+            pixel->rgbtGreen = round((float)sum_green / count_visited);
+            pixel->rgbtBlue = round((float)sum_blue / count_visited);
         }
     }
-
     copyImage(height, width, image_buffer, image);
     // free(image_buffer);
 
