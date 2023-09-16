@@ -6,6 +6,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+void print_array(int array[], int size)
+{
+    for (int i = 0; i < size; i++) {
+        printf("%2d ", array[i]);
+    }
+    printf("\n");
+}
+
 // Convert image to grayscale
 void grayscale(int height, int width, RGBTRIPLE image[height][width])
 {
@@ -72,14 +80,6 @@ void reflect(int height, int width, RGBTRIPLE image[height][width])
 }
 
 // Blur image
-//
-void print_array(int array[], int size)
-{
-    for (int i = 0; i < size; i++) {
-        printf("%2d ", array[i]);
-    }
-    printf("\n");
-}
 /*
 There are a number of ways to create the effect of blurring or softening an image. For this problem, we’ll use the “box
 blur,” which works by taking each pixel and, for each color value, giving it a new value by averaging the color values
@@ -120,12 +120,16 @@ void blur(int height, int width, RGBTRIPLE image[height][width])
 {
     int offset_x[] = { -1, 0, 1, -1, 1, -1, 1, 1 };
     int offset_y[] = { 1, 1, 1, 0, 0, -1, -1, -1 };
-
     size_t count_offset = sizeof(offset_x) / sizeof(int);
     assert(count_offset == sizeof(offset_y) / sizeof(int));
+    int count_all = count_offset + 1; // +1 -> current pixel
 
-    print_array(offset_x, count_offset);
-    print_array(offset_y, count_offset);
+    /* Allocate NMEMB elements of SIZE bytes each, all initialized to 0.  */
+    // Allocate memory for image
+    RGBTRIPLE* image_copy = calloc(height, width * sizeof(RGBTRIPLE));
+    if (image_copy == NULL) {
+        printf("Not enough memory to store copy of image.\n");
+    }
 
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
@@ -144,7 +148,8 @@ void blur(int height, int width, RGBTRIPLE image[height][width])
                 }
             }
 
-            int count_all = count_offset + 1; // +1 -> current pixel
+            // FIXME: Destructive blurring: use reference buffer to mutate,
+            //     so, surrounding pixels can work with original pixel state
             pixel->rgbtRed = sum_red / count_all;
             pixel->rgbtGreen = sum_green / count_all;
             pixel->rgbtBlue = sum_blue / count_all;
