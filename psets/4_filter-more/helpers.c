@@ -19,10 +19,9 @@ void grayscale(int height, int width, RGBTRIPLE image[height][width])
 {
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
-            // typedef uint8_t BYTE;
-            BYTE avg_rgb = (image[y][x].rgbtRed + image[y][x].rgbtGreen + image[y][x].rgbtBlue) / 3;
+            RGBTRIPLE px = image[y][x]; // typedef uint8_t BYTE;
+            BYTE avg_rgb = (px.rgbtRed + px.rgbtGreen + px.rgbtBlue) / 3;
 
-            // Assign the average value to all components
             image[y][x].rgbtRed = avg_rgb;
             image[y][x].rgbtGreen = avg_rgb;
             image[y][x].rgbtBlue = avg_rgb;
@@ -32,7 +31,7 @@ void grayscale(int height, int width, RGBTRIPLE image[height][width])
 }
 
 /* reverse:     reverse array `arr` in place */
-void reverse(char* arr, int n_arr)
+void reverse(char *arr, int n_arr)
 {
     int temp, i, j;
     for (i = 0, j = n_arr; i < j; i++, j--) {
@@ -43,14 +42,15 @@ void reverse(char* arr, int n_arr)
 }
 
 /* swap_pixels:    swap two RGBTRIPLE values */
-void swap_pixels(RGBTRIPLE* px1, RGBTRIPLE* px2)
+void swap_pixels(RGBTRIPLE *px1, RGBTRIPLE *px2)
 {
     RGBTRIPLE temp = *px1;
     *px1 = *px2;
     *px2 = temp;
 }
 
-/* swap_row_pixels:      Function to swap left and right pixels in a row for reflection */
+/* swap_row_pixels:      Function to swap left and right pixels in a row for
+ * reflection */
 void swap_row_pixels(RGBTRIPLE row[], int width)
 {
     for (int x = 0; x < width / 2; x++) {
@@ -78,34 +78,36 @@ void reflect(int height, int width, RGBTRIPLE image[height][width])
         // }
     }
 }
-void copyImage(int height, int width, RGBTRIPLE source[height][width], RGBTRIPLE destination[height][width])
+
+/**
+ * Copy pixel values from source to destination
+ */
+void copyImage(
+    int height,
+    int width,
+    RGBTRIPLE source[height][width],
+    RGBTRIPLE destination[height][width])
 {
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
-            // Copy pixel values from source to destination
             destination[y][x] = source[y][x];
         }
     }
 }
 
-// Offset
-//
-// Usage: 3x3 Box
-// Scan each 3x3 Box, where center pixel is averaged with sum of surrounding pixel value.
-//
-// Offset offsets[] = {
-//     { -1, -1 }, { 0, -1 }, { 1, -1 },
-//     { -1, 0 }, /*{ 0, 0 },*/ { 1, 0 },
-//     { -1, 1 }, { 0, 1 }, { 1, 1 }
-// };
+/**
+ * Usage: 3x3 Box
+ * Scan each 3x3 Box, where center pixel is averaged with sum of surrounding
+ * pixel value. Offset offsets[] = { { -1, -1 }, { 0, -1 }, { 1, -1 }, { -1, 0
+ * }, /\*{ 0, 0 },*\/ { 1, 0 }, { -1, 1 }, { 0, 1 }, { 1, 1 } };
+ */
 typedef struct {
     int dx;
     int dy;
 } Offset;
 
-/*
+/**
  * Blur image
- *
  * The new value of each pixel would be the average of the values of all
  * of the pixels that are within 1 row and column of the original pixel
  * (forming a 3x3 box). For a pixel along the edge or corner, we would
@@ -113,103 +115,102 @@ typedef struct {
  */
 void blur(int height, int width, RGBTRIPLE image[height][width])
 {
-    Offset offsets[]
-        = { { -1, -1 },
-            { 0, -1 },
-            { 1, -1 },
-            { -1, 0 },
-            // { 0, 0 },
-            { 1, 0 },
-            { -1, 1 },
-            { 0, 1 },
-            { 1, 1 } };
+    Offset offsets[8] = /* clang-format off */ {
+        { -1, -1 }, {  0, -1 }, {  1, -1 },
+        { -1,  0 },/*{ 0, 0},*/ {  1,  0 },
+        { -1,  1 }, {  0,  1 }, {  1,  1 } }; /* clang-format on */
     size_t count_offsets = sizeof(offsets) / sizeof(Offset);
-    assert(count_offsets == 8); // 8+1; if origin(`{ 0, 0 }`) is enabled in offsets[]
-
+    assert(
+        count_offsets
+        == 8); // 8+1; if origin(`{ 0, 0 }`) is enabled in offsets[]
     RGBTRIPLE buffer_image[height][width];
 
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
-            RGBTRIPLE* pixel = &image[y][x];
+            RGBTRIPLE *pixel = &image[y][x]; // 0,0,0 if origin(`{ 0, 0 }`) is
+                                             // enabled in offsets[]
             int sum_red = pixel->rgbtRed, sum_green = pixel->rgbtGreen,
-                sum_blue = pixel->rgbtBlue; // 0,0,0 if origin(`{ 0, 0 }`) is enabled in offsets[]
-            int count_visited = 1; // 0 if origin(`{ 0, 0 }`) is enabled in offsets[]
-
+                sum_blue = pixel->rgbtBlue;
+            int count_visited
+                = 1; // 0 if origin(`{ 0, 0 }`) is enabled in offsets[]
             for (int i = 0; i < count_offsets; i++) {
                 int idx_nx = x + offsets[i].dx, idx_ny = y + offsets[i].dy;
-
-                if (!(idx_nx >= 0 && idx_nx < width && idx_ny >= 0 && idx_ny < height)) {
+                if (!(idx_nx >= 0 && idx_nx < width && idx_ny >= 0
+                      && idx_ny < height))
                     continue;
-                }
-
                 RGBTRIPLE rgbt = (image[idx_ny][idx_nx]);
                 sum_red += rgbt.rgbtRed;
                 sum_green += rgbt.rgbtGreen;
                 sum_blue += rgbt.rgbtBlue;
                 count_visited++;
             }
-
-            RGBTRIPLE* buffer_pixel = &buffer_image[y][x];
+            RGBTRIPLE *buffer_pixel = &buffer_image[y][x];
             buffer_pixel->rgbtRed = round((float)sum_red / count_visited);
             buffer_pixel->rgbtGreen = round((float)sum_green / count_visited);
             buffer_pixel->rgbtBlue = round((float)sum_blue / count_visited);
         }
     }
-
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
+    for (int y = 0; y < height; y++)
+        for (int x = 0; x < width; x++)
             image[y][x] = buffer_image[y][x];
+
+    return;
+}
+
+/**
+ * Mutate current pixel basedt on 3x3 neighbourhood around the current pixel.
+ */
+void apply_sobel_gradient_magnitude(
+    int x,
+    int y,
+    const int width,
+    const int height,
+    RGBTRIPLE image[height][width])
+{
+    const int kern_gx[3][3] = { { -1, 0, 1 }, { -2, 0, 2 }, { -1, 0, 1 } };
+    const int kern_gy[3][3] = { { -1, -2, -1 }, { 0, 0, 0 }, { 1, 2, 1 } };
+    const double MAX_RGB = 255.0;
+    const RGBTRIPLE RGBTRIPLE_BLACK = {
+        .rgbtRed = 0x00, .rgbtBlue = 0x00, .rgbtGreen = 0x00
+    }; // Black: 0x00 or 0x000000, White: 0xFF
+    int gxr = 0, gyr = 0;
+    int gxg = 0, gyg = 0;
+    int gxb = 0, gyb = 0;
+
+    for (int row = -1; row <= 1; row++) {
+        for (int col = -1; col <= 1; col++) {
+            int nx = x + row, ny = y + col;
+            /* if border or corner, color it black and skip this iteration */
+            if (!(nx >= 0 && nx < width && ny >= 0 && ny < height)) {
+                image[y][x] = RGBTRIPLE_BLACK;
+                continue;
+            }
+            RGBTRIPLE npix = image[ny][nx];
+            gxr += npix.rgbtRed * kern_gx[col + 1][row + 1];
+            gyr += npix.rgbtRed * kern_gy[col + 1][row + 1];
+            gxg += npix.rgbtGreen * kern_gx[col + 1][row + 1];
+            gyg += npix.rgbtGreen * kern_gy[col + 1][row + 1];
+            gxb += npix.rgbtBlue * kern_gx[col + 1][row + 1];
+            gyb += npix.rgbtBlue * kern_gy[col + 1][row + 1];
         }
     }
-
-    return;
+    double grad_g = sqrt((double)(gxg * gxg + gyg * gyg));
+    double grad_r = sqrt((double)(gxr * gxr + gyr * gyr));
+    double grad_b = sqrt((double)(gxb * gxb + gyb * gyb));
+    image[y][x].rgbtRed = (int)(MAX_RGB - fmin(MAX_RGB, round(grad_g)));
+    image[y][x].rgbtGreen = (int)(MAX_RGB - fmin(MAX_RGB, round(grad_r)));
+    image[y][x].rgbtBlue = (int)(MAX_RGB - fmin(MAX_RGB, round(grad_b)));
 }
 
-// Detect edges
+/**
+ * Detect edges
+ */
 void edges(int height, int width, RGBTRIPLE image[height][width])
 {
-    int Gx[3][3] = { { -1, 0, 1 }, { -2, 0, 2 }, { -1, 0, 1 } };
-    int Gy[3][3] = { { -1, -2, -1 }, { 0, 0, 0 }, { 1, 2, 1 } };
-    // Gradient Magnitude (G):
-    // G = sqrt(Gx^2 + Gy^2)
+    // blur(height, width, image);
+    for (int y = 0; y < height; y++)
+        for (int x = 0; x < width; x++)
+            apply_sobel_gradient_magnitude(x, y, width, height, image);
 
     return;
 }
-/* Edges
-In artificial intelligence algorithms for image processing, it is often useful to detect edges in an image: lines in the
-image that create a boundary between one object and another. One way to achieve this effect is by applying the Sobel
-operator to the image.
-
-Like image blurring, edge detection also works by taking each pixel, and modifying it based on the 3x3 grid of pixels
-that surrounds that pixel. But instead of just taking the average of the nine pixels, the Sobel operator computes the
-new value of each pixel by taking a weighted sum of the values for the surrounding pixels. And since edges between
-objects could take place in both a vertical and a horizontal direction, you’ll actually compute two weighted sums: one
-for detecting edges in the x direction, and one for detecting edges in the y direction. In particular, you’ll use the
-following two “kernels”:
-
-Sobel kernels
-
-How to interpret these kernels? In short, for each of the three color values for each pixel, we’ll compute two values Gx
-and Gy. To compute Gx for the red channel value of a pixel, for instance, we’ll take the original red values for the
-nine pixels that form a 3x3 box around the pixel, multiply them each by the corresponding value in the Gx kernel, and
-take the sum of the resulting values.
-
-Why these particular values for the kernel? In the Gx direction, for instance, we’re multiplying the pixels to the right
-of the target pixel by a positive number, and multiplying the pixels to the left of the target pixel by a negative
-number. When we take the sum, if the pixels on the right are a similar color to the pixels on the left, the result will
-be close to 0 (the numbers cancel out). But if the pixels on the right are very different from the pixels on the left,
-then the resulting value will be very positive or very negative, indicating a change in color that likely is the result
-of a boundary between objects. And a similar argument holds true for calculating edges in the y direction.
-
-Using these kernels, we can generate a Gx and Gy value for each of the red, green, and blue channels for a pixel. But
-each channel can only take on one value, not two: so we need some way to combine Gx and Gy into a single value. The
-Sobel filter algorithm combines Gx and Gy into a final value by calculating the square root of Gx^2 + Gy^2. And since
-channel values can only take on integer values from 0 to 255, be sure the resulting value is rounded to the nearest
-integer and capped at 255!
-
-And what about handling pixels at the edge, or in the corner of the image? There are many ways to handle pixels at the
-edge, but for the purposes of this problem, we’ll ask you to treat the image as if there was a 1 pixel solid black
-border around the edge of the image: therefore, trying to access a pixel past the edge of the image should be treated as
-a solid black pixel (values of 0 for each of red, green, and blue). This will effectively ignore those pixels from our
-calculations of Gx and Gy.
-*/

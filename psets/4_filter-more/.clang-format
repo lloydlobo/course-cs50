@@ -6,10 +6,10 @@ BinPackArguments: false
 AllowAllParametersOfDeclarationOnNextLine: true
 NamespaceIndentation: None
 BreakBeforeBraces: Stroustrup
-ColumnLimit: 120
+ColumnLimit: 80
 PenaltyReturnTypeOnItsOwnLine: 200
 PenaltyIndentedWhitespace: 1
-PointerAlignment: Left
+PointerAlignment: Right
 AllowShortFunctionsOnASingleLine: None
 AlwaysBreakTemplateDeclarations: Yes
 AlignConsecutiveMacros: None
