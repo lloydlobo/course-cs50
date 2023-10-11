@@ -90,7 +90,7 @@ int approach_1(void)
 int approach_2(int argc, char **argv)
 {
     // list: 0x4a44180 list->number: 0x4a44180 list->next: 0x4a44188
-    node *list = NULL;
+    node *list = NULL; // Memory for numbers
 
     // i is 1 as 0 is name of the executable program.
     for (int i = 1; i < argc; i++) {
@@ -103,24 +103,31 @@ int approach_2(int argc, char **argv)
         n->number = number;
         n->next = NULL;
 
+        // Prepend node to linked list
         n->next = list;
         list = n;
     }
 
-    node *ptr = list;
-    while (ptr != NULL) {
-        printf("ptr->number: %i \n", ptr->number);
-        ptr = ptr->next;
+    // Print numbers
+    for (node *ptr = list; ptr != NULL; ptr = ptr->next) {
+        printf("%i\n", ptr->number);
     }
-    ptr = list; // reset ptr position to point to list gead/root
+    // OR
+    //
+    // Print numbers
+    // node *ptr = list;
+    // while (ptr != NULL) {
+    //     printf("ptr->number: %i \n", ptr->number);
+    //     ptr = ptr->next;
+    // }
+    // ptr = list; // reset ptr position to point to list head/root
 
+    node *ptr = list;
     while (ptr != NULL) {
         node *nxt = ptr->next;
         free(ptr);
         ptr = nxt;
     }
-    assert(ptr->next == NULL);
-    assert(ptr == NULL);
 
     return 0;
 }
